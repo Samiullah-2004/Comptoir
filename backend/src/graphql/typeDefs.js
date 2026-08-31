@@ -51,6 +51,10 @@ scalar DateTime
     login(email: String!, password: String!): AuthPayload!
     createOrder(items: [OrderItemInput!]!): Order!
     updateOrderStatus(orderId: ID!, status: OrderStatus!): Order!
+    createMenuItem(name: String!, price: Float!, categoryId: ID!, imageUrl: String): MenuItem!
+    updateMenuItem(id: ID!, name: String, price: Float, available: Boolean, imageUrl: String): MenuItem!
+    deleteMenuItem(id: ID!): Boolean!
+    createCategory(name: String!): Category!    
   }
     
   type OrderItem {
