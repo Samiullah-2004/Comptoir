@@ -55,6 +55,7 @@ scalar DateTime
     updateMenuItem(id: ID!, name: String, price: Float, available: Boolean, imageUrl: String): MenuItem!
     deleteMenuItem(id: ID!): Boolean!
     createCategory(name: String!): Category!    
+    createCheckoutSession(orderId: ID!): CheckoutSession!
   }
     
   type OrderItem {
@@ -70,6 +71,10 @@ type Order {
   total: Float!
   items: [OrderItem!]!
   createdAt: DateTime!
+}
+
+type CheckoutSession {
+  url: String!
 }
 
 input OrderItemInput {
