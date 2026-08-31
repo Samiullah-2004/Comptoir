@@ -133,6 +133,45 @@ const resolvers = {
       });
       return updatedOrder;
     },
+    createCategory: async (_parent, { name }, context) => {
+      if (context.role !== "ADMIN") {
+        throw new Error("Only admins can manage the menu");
+      }
+      return context.prisma.category.create({ data: { name } });
+    },
+
+    createMenuItem: async (
+      _parent,
+      { name, price, categoryId, imageUrl },
+      context,
+    ) => {
+      if (context.role !== "ADMIN") {
+        throw new Error("Only admins can manage the menu");
+      }
+      return context.prisma.menuItem.create({
+        data: { name, price, categoryId, imageUrl },
+        include: { category: true },
+      });
+    },
+
+    updateMenuItem: async (_parent, { id, ...updates }, context) => {
+      if (context.role !== "ADMIN") {
+        throw new Error("Only admins can manage the menu");
+      }
+      return context.prisma.menuItem.update({
+        where: { id },
+        data: updates,
+        include: { category: true },
+      });
+    },
+
+    deleteMenuItem: async (_parent, { id }, context) => {
+      if (context.role !== "ADMIN") {
+        throw new Error("Only admins can manage the menu");
+      }
+      await context.prisma.menuItem.delete({ where: { id } });
+      return true;
+    },
   },
 };
 
