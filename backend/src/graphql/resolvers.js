@@ -127,7 +127,10 @@ const resolvers = {
           items: { include: { menuItem: true } },
         },
       });
-
+      context.io.to(`order:${orderId}`).emit("orderStatusUpdated", {
+        orderId: updatedOrder.id,
+        status: updatedOrder.status,
+      });
       return updatedOrder;
     },
   },
