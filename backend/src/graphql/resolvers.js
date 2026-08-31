@@ -102,6 +102,34 @@ const resolvers = {
 
       return order;
     },
+    updateOrderStatus: async (_parent, { orderId, status }, context) => {
+      if (!context.userId) {
+        throw new Error("You must be logged in");
+      }
+      if (context.role !== "ADMIN") {
+        throw new Error("Only admins can update order status");
+      }
+
+      const order = await context.prisma.order.findUnique({
+        where: { id: orderId },
+      });
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      const updatedOrder = await context.prisma.order.update({
+        where: { id: orderId },
+        data: {
+          status,
+          statusHistory: { create: { status } },
+        },
+        include: {
+          items: { include: { menuItem: true } },
+        },
+      });
+
+      return updatedOrder;
+    },
   },
 };
 

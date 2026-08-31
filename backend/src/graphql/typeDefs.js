@@ -50,6 +50,7 @@ scalar DateTime
     register(email: String!, password: String!): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
     createOrder(items: [OrderItemInput!]!): Order!
+    updateOrderStatus(orderId: ID!, status: OrderStatus!): Order!
   }
     
   type OrderItem {
