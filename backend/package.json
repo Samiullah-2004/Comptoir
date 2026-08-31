@@ -31,6 +31,7 @@
     "graphql": "^16.14.2",
     "graphql-scalars": "^2.0.0",
     "jsonwebtoken": "^9.0.3",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "stripe": "^22.6.0"
   }
 }

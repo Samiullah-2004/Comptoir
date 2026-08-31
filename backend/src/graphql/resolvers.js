@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../utils/auth");
 const { DateTimeResolver } = require("graphql-scalars");
+const stripe = require("../utils/stripe");
 
 const resolvers = {
   DateTime: DateTimeResolver,
@@ -171,6 +172,40 @@ const resolvers = {
       }
       await context.prisma.menuItem.delete({ where: { id } });
       return true;
+    },
+    createCheckoutSession: async (_parent, { orderId }, context) => {
+      if (!context.userId) {
+        throw new Error("You must be logged in");
+      }
+
+      const order = await context.prisma.order.findUnique({
+        where: { id: orderId },
+        include: { items: { include: { menuItem: true } } },
+      });
+
+      if (!order) {
+        throw new Error("Order not found");
+      }
+      if (order.userId !== context.userId) {
+        throw new Error("This order does not belong to you");
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        payment_method_types: ["card"],
+        line_items: order.items.map((item) => ({
+          price_data: {
+            currency: "usd",
+            product_data: { name: item.menuItem.name },
+            unit_amount: Math.round(item.priceAtOrder * 100),
+          },
+          quantity: item.quantity,
+        })),
+        success_url: "http://localhost:5173/order-success?orderId=" + order.id,
+        cancel_url: "http://localhost:5173/order-cancelled",
+      });
+
+      return { url: session.url };
     },
   },
 };
