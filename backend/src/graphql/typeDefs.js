@@ -27,26 +27,27 @@ const typeDefs = `#graphql
     category: Category!
   }
 
+  type User {
+    id: ID!
+    email: String!
+    role: Role!
+  }
+
+  type AuthPayload {
+    token: String!
+    user: User!
+  }
+
   type Query {
     categories: [Category!]!
     menuItems: [MenuItem!]!
+    me: User
   }
 
-  type User {
-  id: ID!
-  email: String!
-  role: Role!
-}
-
-type AuthPayload {
-  token: String!
-  user: User!
-}
-
-type Mutation {
-  register(email: String!, password: String!): AuthPayload!
-  login(email: String!, password: String!): AuthPayload!
-}
+  type Mutation {
+    register(email: String!, password: String!): AuthPayload!
+    login(email: String!, password: String!): AuthPayload!
+  }
 `;
 
 module.exports = typeDefs;
