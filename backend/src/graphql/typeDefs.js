@@ -47,7 +47,28 @@ const typeDefs = `#graphql
   type Mutation {
     register(email: String!, password: String!): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
+    createOrder(items: [OrderItemInput!]!): Order!
   }
+    
+  type OrderItem {
+  id: ID!
+  menuItem: MenuItem!
+  quantity: Int!
+  priceAtOrder: Float!
+}
+
+type Order {
+  id: ID!
+  status: OrderStatus!
+  total: Float!
+  items: [OrderItem!]!
+  createdAt: String!
+}
+
+input OrderItemInput {
+  menuItemId: ID!
+  quantity: Int!
+}
 `;
 
 module.exports = typeDefs;
