@@ -23,10 +23,12 @@
     "@apollo/server": "^5.5.1",
     "@as-integrations/express5": "^1.1.2",
     "@prisma/client": "^6.19.3",
+    "bcrypt": "^6.0.0",
     "body-parser": "^2.3.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "graphql": "^16.14.2"
+    "graphql": "^16.14.2",
+    "jsonwebtoken": "^9.0.3"
   }
 }
