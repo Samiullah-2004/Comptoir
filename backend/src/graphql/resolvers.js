@@ -1,7 +1,9 @@
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../utils/auth");
+const { DateTimeResolver } = require("graphql-scalars");
 
 const resolvers = {
+  DateTime: DateTimeResolver,
   Query: {
     categories: async (_parent, _args, context) => {
       return context.prisma.category.findMany({ include: { menuItems: true } });
@@ -12,6 +14,16 @@ const resolvers = {
     me: async (_parent, _args, context) => {
       if (!context.userId) return null;
       return context.prisma.user.findUnique({ where: { id: context.userId } });
+    },
+    myOrders: async (_parent, _args, context) => {
+      if (!context.userId) {
+        throw new Error("You must be logged in to view your orders");
+      }
+      return context.prisma.order.findMany({
+        where: { userId: context.userId },
+        include: { items: { include: { menuItem: true } } },
+        orderBy: { createdAt: "desc" },
+      });
     },
   },
   Mutation: {
