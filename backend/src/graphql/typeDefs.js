@@ -1,4 +1,5 @@
 const typeDefs = `#graphql
+scalar DateTime
   enum Role {
     CUSTOMER
     ADMIN
@@ -42,6 +43,7 @@ const typeDefs = `#graphql
     categories: [Category!]!
     menuItems: [MenuItem!]!
     me: User
+    myOrders: [Order!]!
   }
 
   type Mutation {
@@ -62,7 +64,7 @@ type Order {
   status: OrderStatus!
   total: Float!
   items: [OrderItem!]!
-  createdAt: String!
+  createdAt: DateTime!
 }
 
 input OrderItemInput {
