@@ -28,11 +28,12 @@ scalar DateTime
     category: Category!
   }
 
-  type User {
-    id: ID!
-    email: String!
-    role: Role!
-  }
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  role: Role!
+}
 
   type AuthPayload {
     token: String!
@@ -47,7 +48,7 @@ scalar DateTime
   }
 
   type Mutation {
-    register(email: String!, password: String!): AuthPayload!
+    register(name: String!, email: String!, password: String!): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
     createOrder(items: [OrderItemInput!]!): Order!
     updateOrderStatus(orderId: ID!, status: OrderStatus!): Order!
