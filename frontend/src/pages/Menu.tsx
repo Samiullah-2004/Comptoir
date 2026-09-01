@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useQuery } from '@apollo/client/react'
+import { useNavigate } from 'react-router-dom'
 import { GET_CATEGORIES } from '../graphql/queries'
+import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 
 interface MenuItem {
   id: string
@@ -23,6 +26,17 @@ function formatPKR(amount: number) {
 export default function Menu() {
   const { data, loading, error } = useQuery<{ categories: Category[] }>(GET_CATEGORIES)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const { addItem, items } = useCart()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  function handleAdd(item: MenuItem) {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    addItem({ menuItemId: item.id, name: item.name, price: item.price })
+  }
 
   if (loading) return <div className="p-8 text-text-secondary">Loading menu...</div>
   if (error) return <div className="p-8 text-accent">Failed to load menu: {error.message}</div>
@@ -32,15 +46,31 @@ export default function Menu() {
     ? categories.find((c) => c.id === activeCategory)
     : categories[0]
 
+  const cartCount = items.reduce((sum, i) => sum + i.quantity, 0)
+
   return (
     <div className="min-h-screen bg-bg">
       <header className="border-b border-border px-8 py-5 flex items-center justify-between">
         <h1 className="font-display text-2xl font-semibold text-text">Comptoir</h1>
-        <div className="flex gap-3">
-          <button className="text-sm text-text-secondary hover:text-text">Login</button>
-          <button className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-[6px]">
-            Sign up
-          </button>
+        <div className="flex items-center gap-3">
+          {cartCount > 0 && (
+            <span className="text-sm text-text-secondary">Cart · {cartCount}</span>
+          )}
+          {user ? (
+            <span className="text-sm text-text">{user.name || user.email}</span>
+          ) : (
+            <>
+              <button onClick={() => navigate('/login')} className="text-sm text-text-secondary hover:text-text">
+                Login
+              </button>
+              <button
+                onClick={() => navigate('/register')}
+                className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-[6px]"
+              >
+                Sign up
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -73,6 +103,7 @@ export default function Menu() {
                 <span className="text-accent font-medium">{formatPKR(item.price)}</span>
                 <button
                   disabled={!item.available}
+                  onClick={() => handleAdd(item)}
                   className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm px-3 py-1.5 rounded-[6px]"
                 >
                   Add
