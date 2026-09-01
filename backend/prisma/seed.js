@@ -2,23 +2,38 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  const starters = await prisma.category.create({ data: { name: 'Starters' } });
-  const mains = await prisma.category.create({ data: { name: 'Mains' } });
-  const desserts = await prisma.category.create({ data: { name: 'Desserts' } });
+  await prisma.orderItem.deleteMany();
+  await prisma.orderStatusHistory.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.menuItem.deleteMany();
+  await prisma.category.deleteMany();
+
+  const pizzas = await prisma.category.create({ data: { name: 'Pizzas' } });
+  const shawarmas = await prisma.category.create({ data: { name: 'Shawarmas & Rolls' } });
+  const fries = await prisma.category.create({ data: { name: 'Fries & Loaded Fries' } });
+  const desiFastFood = await prisma.category.create({ data: { name: 'Desi Fast Food' } });
   const drinks = await prisma.category.create({ data: { name: 'Drinks' } });
 
   await prisma.menuItem.createMany({
     data: [
-      { name: 'Garlic Bread', price: 5.5, categoryId: starters.id },
-      { name: 'Bruschetta', price: 6.0, categoryId: starters.id },
-      { name: 'Margherita Pizza', price: 12.0, categoryId: mains.id },
-      { name: 'Grilled Chicken', price: 14.5, categoryId: mains.id },
-      { name: 'Tiramisu', price: 7.0, categoryId: desserts.id },
-      { name: 'Lemonade', price: 3.0, categoryId: drinks.id },
+      { name: 'Chicken Tikka Pizza', price: 1250, categoryId: pizzas.id },
+      { name: 'Fajita Pizza', price: 1350, categoryId: pizzas.id },
+      { name: 'Behari Pizza', price: 1450, categoryId: pizzas.id },
+      { name: 'Chicken Shawarma Roll', price: 350, categoryId: shawarmas.id },
+      { name: 'Beef Shawarma Roll', price: 400, categoryId: shawarmas.id },
+      { name: 'Zinger Shawarma', price: 450, categoryId: shawarmas.id },
+      { name: 'Classic Fries', price: 300, categoryId: fries.id },
+      { name: 'Peri Peri Loaded Fries', price: 550, categoryId: fries.id },
+      { name: 'Cheese Loaded Fries', price: 600, categoryId: fries.id },
+      { name: 'Pizza Paratha', price: 400, categoryId: desiFastFood.id },
+      { name: 'Chicken Burger', price: 450, categoryId: desiFastFood.id },
+      { name: 'Zinger Burger', price: 500, categoryId: desiFastFood.id },
+      { name: 'Soft Drink 500ml', price: 120, categoryId: drinks.id },
+      { name: 'Fresh Lemonade', price: 200, categoryId: drinks.id },
     ],
   });
 
-  console.log('Seed data created.');
+  console.log('Pakistani fast food seed data created.');
 }
 
 main()
