@@ -28,7 +28,7 @@ const resolvers = {
     },
   },
   Mutation: {
-    register: async (_parent, { email, password }, context) => {
+    register: async (_parent, { name, email, password }, context) => {
       const existing = await context.prisma.user.findUnique({
         where: { email },
       });
@@ -37,7 +37,7 @@ const resolvers = {
       }
       const passwordHash = await bcrypt.hash(password, 10);
       const user = await context.prisma.user.create({
-        data: { email, passwordHash },
+        data: { name, email, passwordHash },
       });
       const token = generateToken(user);
       return { token, user };
