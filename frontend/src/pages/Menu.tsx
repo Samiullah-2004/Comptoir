@@ -54,7 +54,9 @@ export default function Menu() {
         <h1 className="font-display text-2xl font-semibold text-text">Comptoir</h1>
         <div className="flex items-center gap-3">
           {cartCount > 0 && (
-            <span className="text-sm text-text-secondary">Cart · {cartCount}</span>
+            <button onClick={() => navigate('/cart')} className="text-sm text-text-secondary hover:text-text">
+              Cart · {cartCount}
+            </button>
           )}
           {user ? (
             <span className="text-sm text-text">{user.name || user.email}</span>
@@ -80,11 +82,10 @@ export default function Menu() {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${
-                (currentCategory?.id === cat.id)
+              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${(currentCategory?.id === cat.id)
                   ? 'bg-accent text-white border-accent'
                   : 'bg-surface text-text-secondary border-border hover:border-accent'
-              }`}
+                }`}
             >
               {cat.name}
             </button>
