@@ -26,3 +26,21 @@ export const REGISTER = gql`
     }
   }
 `;
+
+export const CREATE_ORDER = gql`
+  mutation CreateOrder($items: [OrderItemInput!]!) {
+    createOrder(items: $items) {
+      id
+      status
+      total
+    }
+  }
+`;
+
+export const CREATE_CHECKOUT_SESSION = gql`
+  mutation CreateCheckoutSession($orderId: ID!) {
+    createCheckoutSession(orderId: $orderId) {
+      url
+    }
+  }
+`;
