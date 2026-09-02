@@ -26,6 +26,18 @@ const resolvers = {
         orderBy: { createdAt: "desc" },
       });
     },
+    allOrders: async (_parent, _args, context) => {
+      if (context.role !== "ADMIN") {
+        throw new Error("Only admins can view all orders");
+      }
+      return context.prisma.order.findMany({
+        include: {
+          items: { include: { menuItem: true } },
+          user: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    },
   },
   Mutation: {
     register: async (_parent, { name, email, password }, context) => {
