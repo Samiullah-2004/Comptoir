@@ -45,6 +45,7 @@ type User {
     menuItems: [MenuItem!]!
     me: User
     myOrders: [Order!]!
+    allOrders: [Order!]!
   }
 
   type Mutation {
@@ -72,6 +73,7 @@ type Order {
   total: Float!
   items: [OrderItem!]!
   createdAt: DateTime!
+  user: User!
 }
 
 type CheckoutSession {
