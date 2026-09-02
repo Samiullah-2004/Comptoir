@@ -113,6 +113,8 @@ const resolvers = {
         },
       });
 
+      context.io.emit("newOrder", { orderId: order.id });
+
       return order;
     },
     updateOrderStatus: async (_parent, { orderId, status }, context) => {
