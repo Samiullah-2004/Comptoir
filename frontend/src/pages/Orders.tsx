@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery } from '@apollo/client/react'
 import { useNavigate } from 'react-router-dom'
 import { GET_MY_ORDERS } from '../graphql/queries'
@@ -47,6 +48,7 @@ export default function Orders() {
         socket.connect()
 
         function handleUpdate(payload: { orderId: string; status: string }) {
+            console.log('status update received, new status:', payload.status)
             setLiveStatuses((prev) => ({ ...prev, [payload.orderId]: payload.status }))
         }
 
@@ -79,17 +81,32 @@ export default function Orders() {
             )}
 
             <div className="max-w-lg space-y-4">
-                {orders.map((order) => {
+                {orders.map((order, i) => {
                     const status = liveStatuses[order.id] || order.status
                     return (
-                        <div key={order.id} className="bg-surface border border-border rounded-[10px] p-4">
+                        <motion.div
+                            key={order.id}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.25, delay: i * 0.05 }}
+                            className="bg-surface border border-border rounded-[10px] p-4"
+                        >
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-text-secondary text-sm">
                                     {new Date(order.createdAt).toLocaleString()}
                                 </span>
-                                <span className={`text-sm font-medium ${statusColors[status] || 'text-text'}`}>
-                                    {status}
-                                </span>
+                                <AnimatePresence mode="wait">
+                                    <motion.span
+                                        key={status}
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.8 }}
+                                        transition={{ duration: 0.25 }}
+                                        className={`text-sm font-medium ${statusColors[status] || 'text-text'}`}
+                                    >
+                                        {status}
+                                    </motion.span>
+                                </AnimatePresence>
                             </div>
                             <ul className="text-text text-sm mb-2">
                                 {order.items.map((item, i) => (
@@ -97,7 +114,7 @@ export default function Orders() {
                                 ))}
                             </ul>
                             <p className="text-accent font-medium">{formatPKR(order.total)}</p>
-                        </div>
+                        </motion.div>
                     )
                 })}
             </div>

@@ -54,12 +54,14 @@ export default function Admin() {
 
   useEffect(() => {
     socket.connect()
-    function handleUpdate() {
+    function handleChange() {
       refetch()
     }
-    socket.on('orderStatusUpdated', handleUpdate)
+    socket.on('orderStatusUpdated', handleChange)
+    socket.on('newOrder', handleChange)
     return () => {
-      socket.off('orderStatusUpdated', handleUpdate)
+      socket.off('orderStatusUpdated', handleChange)
+      socket.off('newOrder', handleChange)
     }
   }, [refetch])
 

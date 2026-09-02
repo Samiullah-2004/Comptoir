@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@apollo/client/react'
 import { useNavigate, Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { CREATE_ORDER, CREATE_CHECKOUT_SESSION } from '../graphql/mutations'
@@ -46,10 +47,14 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-bg flex flex-col items-center justify-center px-4"
+      >
         <p className="text-text-secondary mb-4">Your cart is empty.</p>
-        <Link to="/" className="text-accent">Back to menu</Link>
-      </div>
+        <Link to="/" className="text-accent hover:text-accent-hover transition-colors">Back to menu</Link>
+      </motion.div>
     )
   }
 
@@ -58,25 +63,33 @@ export default function Cart() {
       <h1 className="font-display text-2xl font-semibold text-text mb-6">Your cart</h1>
 
       <div className="max-w-lg space-y-3 mb-6">
-        {items.map((item) => (
-          <div
-            key={item.menuItemId}
-            className="bg-surface border border-border rounded-[10px] p-4 flex items-center justify-between"
-          >
-            <div>
-              <p className="text-text font-medium">{item.name}</p>
-              <p className="text-text-secondary text-sm">
-                {item.quantity} × {formatPKR(item.price)}
-              </p>
-            </div>
-            <button
-              onClick={() => removeItem(item.menuItemId)}
-              className="text-accent text-sm"
+        <AnimatePresence initial={false}>
+          {items.map((item) => (
+            <motion.div
+              key={item.menuItemId}
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 12, height: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}
+              transition={{ duration: 0.2 }}
+              className="bg-surface border border-border rounded-[10px] p-4 flex items-center justify-between overflow-hidden"
             >
-              Remove
-            </button>
-          </div>
-        ))}
+              <div>
+                <p className="text-text font-medium">{item.name}</p>
+                <p className="text-text-secondary text-sm">
+                  {item.quantity} × {formatPKR(item.price)}
+                </p>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => removeItem(item.menuItemId)}
+                className="text-accent text-sm hover:text-accent-hover transition-colors"
+              >
+                Remove
+              </motion.button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       <div className="max-w-lg flex items-center justify-between mb-6">
@@ -86,13 +99,15 @@ export default function Cart() {
 
       {checkoutError && <p className="text-accent text-sm mb-4">{checkoutError}</p>}
 
-      <button
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         onClick={handleCheckout}
         disabled={creatingOrder || creatingSession}
         className="bg-accent hover:bg-accent-hover disabled:opacity-50 text-white px-6 py-3 rounded-[6px]"
       >
         {creatingOrder || creatingSession ? 'Processing...' : 'Checkout'}
-      </button>
+      </motion.button>
     </div>
   )
 }
