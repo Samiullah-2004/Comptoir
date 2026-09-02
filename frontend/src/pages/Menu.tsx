@@ -59,7 +59,12 @@ export default function Menu() {
             </button>
           )}
           {user ? (
-            <span className="text-sm text-text">{user.name || user.email}</span>
+            <>
+              <button onClick={() => navigate('/orders')} className="text-sm text-text-secondary hover:text-text">
+                Orders
+              </button>
+              <span className="text-sm text-text">{user.name || user.email}</span>
+            </>
           ) : (
             <>
               <button onClick={() => navigate('/login')} className="text-sm text-text-secondary hover:text-text">
@@ -83,8 +88,8 @@ export default function Menu() {
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-colors ${(currentCategory?.id === cat.id)
-                  ? 'bg-accent text-white border-accent'
-                  : 'bg-surface text-text-secondary border-border hover:border-accent'
+                ? 'bg-accent text-white border-accent'
+                : 'bg-surface text-text-secondary border-border hover:border-accent'
                 }`}
             >
               {cat.name}
