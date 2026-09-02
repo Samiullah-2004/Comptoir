@@ -15,3 +15,19 @@ export const GET_CATEGORIES = gql`
     }
   }
 `;
+export const GET_MY_ORDERS = gql`
+  query GetMyOrders {
+    myOrders {
+      id
+      status
+      total
+      createdAt
+      items {
+        quantity
+        menuItem {
+          name
+        }
+      }
+    }
+  }
+`;
