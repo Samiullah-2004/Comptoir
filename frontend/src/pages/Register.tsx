@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client/react'
 import { useNavigate, Link } from 'react-router-dom'
 import { REGISTER } from '../graphql/mutations'
 import { useAuth } from '../context/AuthContext'
+import { motion } from 'framer-motion'
 
 export default function Register() {
   const [name, setName] = useState('')
@@ -38,7 +39,10 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-      <form
+      <motion.form
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
         onSubmit={handleSubmit}
         className="bg-surface border border-border rounded-[10px] p-8 w-full max-w-sm"
       >
@@ -50,7 +54,7 @@ export default function Register() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent"
+          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors"
         />
 
         <label className="block text-sm text-text-secondary mb-1">Email</label>
@@ -59,7 +63,7 @@ export default function Register() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent"
+          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors"
         />
 
         <label className="block text-sm text-text-secondary mb-1">Password</label>
@@ -68,7 +72,7 @@ export default function Register() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent"
+          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors"
         />
 
         <label className="block text-sm text-text-secondary mb-1">Confirm password</label>
@@ -77,25 +81,27 @@ export default function Register() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
-          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent"
+          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors"
         />
 
         {(formError || error) && (
           <p className="text-accent text-sm mb-4">{formError || error?.message}</p>
         )}
 
-        <button
+        <motion.button
           type="submit"
           disabled={loading}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           className="w-full bg-accent hover:bg-accent-hover text-white rounded-[6px] py-2 disabled:opacity-50"
         >
           {loading ? 'Creating account...' : 'Sign up'}
-        </button>
+        </motion.button>
 
         <p className="text-sm text-text-secondary mt-4 text-center">
           Already have an account? <Link to="/login" className="text-accent">Log in</Link>
         </p>
-      </form>
+      </motion.form>
     </div>
   )
 }
