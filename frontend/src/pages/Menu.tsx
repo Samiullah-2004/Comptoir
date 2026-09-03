@@ -6,6 +6,7 @@ import { GET_CATEGORIES } from '../graphql/queries'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import Toast from '../components/Toast'
+import HeroSlider from '../components/HeroSlider'
 
 interface MenuItem {
   id: string
@@ -102,6 +103,7 @@ export default function Menu() {
       </header>
 
       <div className="px-8 py-6">
+        <HeroSlider />
         <div className="flex gap-2 mb-6 overflow-x-auto">
           {categories.map((cat) => (
             <button
