@@ -107,11 +107,10 @@ export default function Menu() {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all duration-150 ${
-                (currentCategory?.id === cat.id)
-                  ? 'bg-accent text-white border-accent'
-                  : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
-              }`}
+              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all duration-150 ${(currentCategory?.id === cat.id)
+                ? 'bg-accent text-white border-accent'
+                : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
+                }`}
             >
               {cat.name}
             </button>
@@ -128,7 +127,17 @@ export default function Menu() {
               whileHover={{ y: -4 }}
               className="bg-surface border border-border rounded-[10px] p-4 flex flex-col shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="w-full h-32 bg-border rounded-[6px] mb-3" />
+              {item.imageUrl ? (
+                <div className="w-full aspect-square bg-white border border-border rounded-[6px] mb-3 overflow-hidden">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-full aspect-square bg-border rounded-[6px] mb-3" />
+              )}
               <h3 className="text-text font-medium mb-1">{item.name}</h3>
               <div className="mt-auto flex items-center justify-between pt-2">
                 <span className="text-accent font-medium">{formatPKR(item.price)}</span>
