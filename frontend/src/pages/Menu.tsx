@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import Toast from '../components/Toast'
 import HeroSlider from '../components/HeroSlider'
+import { useTheme } from '../context/ThemeContext'
 
 interface MenuItem {
   id: string
@@ -34,6 +35,7 @@ export default function Menu() {
   const navigate = useNavigate()
   const [toastMsg, setToastMsg] = useState('')
   const [showToast, setShowToast] = useState(false)
+  const { theme, toggleTheme } = useTheme()
 
   function handleAdd(item: MenuItem) {
     if (!user) {
@@ -61,6 +63,16 @@ export default function Menu() {
       <header className="border-b border-border px-8 py-5 flex items-center justify-between">
         <h1 className="font-display text-2xl font-semibold text-text">Comptoir</h1>
         <div className="flex items-center gap-3">
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={toggleTheme}
+            className="text-text-secondary hover:text-text flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border text-sm"
+            aria-label="Toggle dark mode"
+          >
+            <span>{theme === 'light' ? '🌙' : '☀️'}</span>
+            <span>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
+          </motion.button>
           {cartCount > 0 && (
             <motion.button
               key={cartCount}
