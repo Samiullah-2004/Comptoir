@@ -6,6 +6,8 @@ import { GET_CATEGORIES } from '../graphql/queries'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import { AnimatePresence } from 'framer-motion'
+import ProductModal from '../components/ProductModal'
 import Toast from '../components/Toast'
 import HeroSlider from '../components/HeroSlider'
 
@@ -38,6 +40,7 @@ export default function Menu() {
   const [showToast, setShowToast] = useState(false)
   const [highlightedCategory, setHighlightedCategory] = useState<string | null>(null)
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
 
   function handleAdd(item: MenuItem) {
     if (!user) {
@@ -88,28 +91,40 @@ export default function Menu() {
     return (
       <motion.div
         key={item.id}
+        layoutId={`card-${item.id}`}
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
-        transition={{ duration: 0.25, delay: (i % 4) * 0.04 }}
+        transition={{
+          default: { type: 'spring', stiffness: 300, damping: 30 },
+          opacity: { duration: 0.25, delay: (i % 4) * 0.04 },
+        }}
         whileHover={{ y: -4 }}
-        className="bg-surface border border-border rounded-[10px] p-4 flex flex-col shadow-sm hover:shadow-md transition-shadow"
+        onClick={() => setSelectedItem(item)}
+        className="bg-surface border border-border rounded-[10px] p-4 flex flex-col shadow-sm hover:shadow-md transition-shadow cursor-pointer"
       >
         {item.imageUrl ? (
-          <div className="w-full aspect-square bg-white border border-border rounded-[6px] mb-3 overflow-hidden">
+          <motion.div layoutId={`image-${item.id}`} className="w-full aspect-square bg-white border border-border rounded-[6px] mb-3 overflow-hidden">
             <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-          </div>
+          </motion.div>
         ) : (
           <div className="w-full aspect-square bg-border rounded-[6px] mb-3" />
         )}
-        <h3 className="text-text font-medium mb-1">{item.name}</h3>
+        <motion.h3 layoutId={`title-${item.id}`} className="text-text font-medium mb-1">
+          {item.name}
+        </motion.h3>
         <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="text-accent font-medium">{formatPKR(item.price)}</span>
+          <motion.span layoutId={`price-${item.id}`} className="text-accent font-medium">
+            {formatPKR(item.price)}
+          </motion.span>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.92 }}
             disabled={!item.available}
-            onClick={() => handleAdd(item)}
+            onClick={(e) => {
+              e.stopPropagation()
+              handleAdd(item)
+            }}
             className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm px-3 py-1.5 rounded-[6px]"
           >
             Add
@@ -241,7 +256,17 @@ export default function Menu() {
           </div>
         )}
       </div>
-
+      <AnimatePresence>
+        {selectedItem && (
+          <ProductModal
+            item={selectedItem}
+            onClose={() => setSelectedItem(null)}
+            onAdd={(item) => {
+              handleAdd(item)
+            }}
+          />
+        )}
+      </AnimatePresence>
       <Toast message={toastMsg} show={showToast} />
     </div>
   )
