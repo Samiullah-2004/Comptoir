@@ -1,13 +1,13 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery } from '@apollo/client/react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { GET_CATEGORIES } from '../graphql/queries'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import Toast from '../components/Toast'
 import HeroSlider from '../components/HeroSlider'
-import { useTheme } from '../context/ThemeContext'
 
 interface MenuItem {
   id: string
@@ -32,10 +32,12 @@ export default function Menu() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const { addItem, items } = useCart()
   const { user } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const [toastMsg, setToastMsg] = useState('')
   const [showToast, setShowToast] = useState(false)
-  const { theme, toggleTheme } = useTheme()
+  const [highlightedCategory, setHighlightedCategory] = useState<string | null>(null)
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
 
   function handleAdd(item: MenuItem) {
     if (!user) {
@@ -48,15 +50,74 @@ export default function Menu() {
     setTimeout(() => setShowToast(false), 1800)
   }
 
+  useEffect(() => {
+    if (activeCategory !== null) return // only scroll-spy in "All" view
+
+    const cats = data?.categories ?? []
+    if (cats.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setHighlightedCategory(entry.target.id.replace('section-', ''))
+          }
+        })
+      },
+      { rootMargin: '-120px 0px -70% 0px', threshold: 0 }
+    )
+
+    cats.forEach((cat) => {
+      const el = sectionRefs.current[cat.id]
+      if (el) observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [data, activeCategory])
+
   if (loading) return <div className="p-8 text-text-secondary">Loading menu...</div>
   if (error) return <div className="p-8 text-accent">Failed to load menu: {error.message}</div>
 
   const categories = data?.categories ?? []
-  const currentCategory = activeCategory
-    ? categories.find((c) => c.id === activeCategory)
-    : categories[0]
+  const isAllView = activeCategory === null
+  const singleCategory = isAllView ? null : categories.find((c) => c.id === activeCategory)
 
   const cartCount = items.reduce((sum, i) => sum + i.quantity, 0)
+
+  function renderItemCard(item: MenuItem, i: number) {
+    return (
+      <motion.div
+        key={item.id}
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.25, delay: (i % 4) * 0.04 }}
+        whileHover={{ y: -4 }}
+        className="bg-surface border border-border rounded-[10px] p-4 flex flex-col shadow-sm hover:shadow-md transition-shadow"
+      >
+        {item.imageUrl ? (
+          <div className="w-full aspect-square bg-white border border-border rounded-[6px] mb-3 overflow-hidden">
+            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-full aspect-square bg-border rounded-[6px] mb-3" />
+        )}
+        <h3 className="text-text font-medium mb-1">{item.name}</h3>
+        <div className="mt-auto flex items-center justify-between pt-2">
+          <span className="text-accent font-medium">{formatPKR(item.price)}</span>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
+            disabled={!item.available}
+            onClick={() => handleAdd(item)}
+            className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm px-3 py-1.5 rounded-[6px]"
+          >
+            Add
+          </motion.button>
+        </div>
+      </motion.div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-bg">
@@ -116,58 +177,69 @@ export default function Menu() {
 
       <div className="px-8 py-6">
         <HeroSlider />
-        <div className="flex gap-2 mb-6 overflow-x-auto">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all duration-150 ${(currentCategory?.id === cat.id)
-                ? 'bg-accent text-white border-accent'
-                : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
-                }`}
-            >
-              {cat.name}
-            </button>
-          ))}
+
+        <div className="flex gap-2 mb-8 overflow-x-auto sticky top-0 bg-bg/95 backdrop-blur-sm py-3 z-10 -mx-8 px-8">
+          <button
+            onClick={() => {
+              setActiveCategory(null)
+              setHighlightedCategory(null)
+            }}
+            className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all duration-150 ${isAllView && !highlightedCategory
+              ? 'bg-accent text-white border-accent'
+              : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
+              }`}
+          >
+            All
+          </button>
+          {categories.map((cat) => {
+            const isHighlighted = isAllView ? highlightedCategory === cat.id : activeCategory === cat.id
+            return (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setActiveCategory(cat.id)
+                  setHighlightedCategory(null)
+                }}
+                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all duration-150 ${isHighlighted
+                  ? 'bg-accent text-white border-accent'
+                  : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
+                  }`}
+              >
+                {cat.name}
+              </button>
+            )
+          })}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {currentCategory?.menuItems.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, delay: i * 0.04 }}
-              whileHover={{ y: -4 }}
-              className="bg-surface border border-border rounded-[10px] p-4 flex flex-col shadow-sm hover:shadow-md transition-shadow"
-            >
-              {item.imageUrl ? (
-                <div className="w-full aspect-square bg-white border border-border rounded-[6px] mb-3 overflow-hidden">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
+        {isAllView ? (
+          <div className="space-y-12">
+            {categories.map((cat) => (
+              <motion.section
+                key={cat.id}
+                id={`section-${cat.id}`}
+                ref={(el) => { sectionRefs.current[cat.id] = el }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <h2 className="font-display text-xl font-semibold text-accent whitespace-nowrap">
+                    {cat.name}
+                  </h2>
+                  <div className="h-px bg-border flex-1" />
                 </div>
-              ) : (
-                <div className="w-full aspect-square bg-border rounded-[6px] mb-3" />
-              )}
-              <h3 className="text-text font-medium mb-1">{item.name}</h3>
-              <div className="mt-auto flex items-center justify-between pt-2">
-                <span className="text-accent font-medium">{formatPKR(item.price)}</span>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
-                  disabled={!item.available}
-                  onClick={() => handleAdd(item)}
-                  className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm px-3 py-1.5 rounded-[6px]"
-                >
-                  Add
-                </motion.button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {cat.menuItems.map((item, i) => renderItemCard(item, i))}
+                </div>
+              </motion.section>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {singleCategory?.menuItems.map((item, i) => renderItemCard(item, i))}
+          </div>
+        )}
       </div>
 
       <Toast message={toastMsg} show={showToast} />
