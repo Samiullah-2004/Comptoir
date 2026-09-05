@@ -58,6 +58,7 @@ type User {
     deleteMenuItem(id: ID!): Boolean!
     createCategory(name: String!): Category!    
     createCheckoutSession(orderId: ID!): CheckoutSession!
+    deleteCategory(id: ID!): Boolean!
   }
     
   type OrderItem {
