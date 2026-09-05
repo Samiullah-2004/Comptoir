@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_CATEGORIES = gql`
   query GetCategories {
@@ -26,6 +26,7 @@ export const GET_MY_ORDERS = gql`
         quantity
         menuItem {
           name
+          imageUrl
         }
       }
     }
