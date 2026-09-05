@@ -77,7 +77,15 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-bg px-8 py-8">
-      <h1 className="font-display text-2xl font-semibold text-text mb-6">Admin dashboard</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-display text-2xl font-semibold text-text">Admin dashboard</h1>
+        <button
+          onClick={() => navigate('/admin/menu')}
+          className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-[6px]"
+        >
+          Manage Menu
+        </button>
+      </div>
 
       <div className="space-y-4 max-w-2xl">
         {orders.map((order) => (

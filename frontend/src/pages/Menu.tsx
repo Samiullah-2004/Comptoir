@@ -43,6 +43,7 @@ export default function Menu() {
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
   const [quantities, setQuantities] = useState<Record<string, number>>({})
+  const categoryScrollRef = useRef<HTMLDivElement>(null)
 
   function getQuantity(itemId: string) {
     return quantities[itemId] ?? 1
@@ -63,6 +64,12 @@ export default function Menu() {
     setShowToast(true)
     setTimeout(() => setShowToast(false), 1800)
     setQuantity(item.id, 1)
+  }
+
+  function scrollCategories(direction: 'left' | 'right') {
+    const el = categoryScrollRef.current
+    if (!el) return
+    el.scrollBy({ left: direction === 'left' ? -200 : 200, behavior: 'smooth' })
   }
 
   useEffect(() => {
@@ -210,37 +217,60 @@ export default function Menu() {
       <div className="px-8 py-6">
         <HeroSlider />
 
-        <div className="flex gap-2 mb-8 overflow-x-auto sticky top-0 bg-bg/95 backdrop-blur-sm py-3 z-10 -mx-8 px-8">
-          <button
-            onClick={() => {
-              setActiveCategory(null)
-              setHighlightedCategory(null)
-            }}
-            className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all duration-150 ${isAllView && !highlightedCategory
-              ? 'bg-accent text-white border-accent'
-              : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
-              }`}
+        <div className="relative mb-8 sticky top-0 bg-bg/95 backdrop-blur-sm py-3 z-10 -mx-8 px-8">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => scrollCategories('left')}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-surface border border-border text-text w-8 h-8 rounded-full flex items-center justify-center shadow-sm hover:border-accent transition-colors"
           >
-            All
-          </button>
-          {categories.map((cat) => {
-            const isHighlighted = isAllView ? highlightedCategory === cat.id : activeCategory === cat.id
-            return (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  setActiveCategory(cat.id)
-                  setHighlightedCategory(null)
-                }}
-                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all duration-150 ${isHighlighted
-                  ? 'bg-accent text-white border-accent'
-                  : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
-                  }`}
-              >
-                {cat.name}
-              </button>
-            )
-          })}
+            ‹
+          </motion.button>
+
+          <div
+            ref={categoryScrollRef}
+            className="flex gap-2 overflow-x-auto scroll-smooth px-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          >
+            <button
+              onClick={() => {
+                setActiveCategory(null)
+                setHighlightedCategory(null)
+              }}
+              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all duration-150 ${isAllView && !highlightedCategory
+                ? 'bg-accent text-white border-accent'
+                : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
+                }`}
+            >
+              All
+            </button>
+            {categories.map((cat) => {
+              const isHighlighted = isAllView ? highlightedCategory === cat.id : activeCategory === cat.id
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setActiveCategory(cat.id)
+                    setHighlightedCategory(null)
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all duration-150 ${isHighlighted
+                    ? 'bg-accent text-white border-accent'
+                    : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
+                    }`}
+                >
+                  {cat.name}
+                </button>
+              )
+            })}
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => scrollCategories('right')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-surface border border-border text-text w-8 h-8 rounded-full flex items-center justify-center shadow-sm hover:border-accent transition-colors"
+          >
+            ›
+          </motion.button>
         </div>
 
         {isAllView ? (

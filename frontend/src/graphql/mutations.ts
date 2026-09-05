@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
@@ -51,5 +51,71 @@ export const UPDATE_ORDER_STATUS = gql`
       id
       status
     }
+  }
+`;
+
+export const CREATE_CATEGORY = gql`
+  mutation CreateCategory($name: String!) {
+    createCategory(name: $name) {
+      id
+      name
+    }
+  }
+`;
+
+export const CREATE_MENU_ITEM = gql`
+  mutation CreateMenuItem(
+    $name: String!
+    $price: Float!
+    $categoryId: ID!
+    $imageUrl: String
+  ) {
+    createMenuItem(
+      name: $name
+      price: $price
+      categoryId: $categoryId
+      imageUrl: $imageUrl
+    ) {
+      id
+      name
+      price
+      imageUrl
+    }
+  }
+`;
+
+export const UPDATE_MENU_ITEM = gql`
+  mutation UpdateMenuItem(
+    $id: ID!
+    $name: String
+    $price: Float
+    $available: Boolean
+    $imageUrl: String
+  ) {
+    updateMenuItem(
+      id: $id
+      name: $name
+      price: $price
+      available: $available
+      imageUrl: $imageUrl
+    ) {
+      id
+      name
+      price
+      available
+      imageUrl
+    }
+  }
+`;
+
+export const DELETE_MENU_ITEM = gql`
+  mutation DeleteMenuItem($id: ID!) {
+    deleteMenuItem(id: $id)
+  }
+`;
+
+export const DELETE_CATEGORY = gql`
+  mutation DeleteCategory($id: ID!) {
+    deleteCategory(id: $id)
   }
 `;
