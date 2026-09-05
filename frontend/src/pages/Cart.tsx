@@ -5,13 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { CREATE_ORDER, CREATE_CHECKOUT_SESSION } from '../graphql/mutations'
+import Counter from '../components/Counter'
 
 function formatPKR(amount: number) {
   return `Rs. ${amount.toLocaleString('en-PK')}`
 }
 
 export default function Cart() {
-  const { items, removeItem, total, clearCart } = useCart()
+  const { items, removeItem, updateQuantity, total, clearCart } = useCart()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [checkoutError, setCheckoutError] = useState('')
@@ -71,19 +72,22 @@ export default function Cart() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 12, height: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}
               transition={{ duration: 0.2 }}
-              className="bg-surface border border-border rounded-[10px] p-4 flex items-center justify-between overflow-hidden"
+              className="bg-surface border border-border rounded-[10px] p-4 flex items-center justify-between overflow-hidden gap-3"
             >
-              <div>
-                <p className="text-text font-medium">{item.name}</p>
-                <p className="text-text-secondary text-sm">
-                  {item.quantity} × {formatPKR(item.price)}
-                </p>
+              <div className="flex-1 min-w-0">
+                <p className="text-text font-medium truncate">{item.name}</p>
+                <p className="text-text-secondary text-sm">{formatPKR(item.price)} each</p>
               </div>
+              <Counter
+                value={item.quantity}
+                onChange={(q) => updateQuantity(item.menuItemId, q)}
+                min={0}
+              />
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => removeItem(item.menuItemId)}
-                className="text-accent text-sm hover:text-accent-hover transition-colors"
+                className="text-accent text-sm hover:text-accent-hover transition-colors whitespace-nowrap"
               >
                 Remove
               </motion.button>

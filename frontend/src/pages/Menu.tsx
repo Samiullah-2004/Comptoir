@@ -10,6 +10,7 @@ import { AnimatePresence } from 'framer-motion'
 import ProductModal from '../components/ProductModal'
 import Toast from '../components/Toast'
 import HeroSlider from '../components/HeroSlider'
+import Counter from '../components/Counter'
 
 interface MenuItem {
   id: string
@@ -41,16 +42,27 @@ export default function Menu() {
   const [highlightedCategory, setHighlightedCategory] = useState<string | null>(null)
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
+  const [quantities, setQuantities] = useState<Record<string, number>>({})
+
+  function getQuantity(itemId: string) {
+    return quantities[itemId] ?? 1
+  }
+
+  function setQuantity(itemId: string, qty: number) {
+    setQuantities((prev) => ({ ...prev, [itemId]: qty }))
+  }
 
   function handleAdd(item: MenuItem) {
     if (!user) {
       navigate('/login')
       return
     }
-    addItem({ menuItemId: item.id, name: item.name, price: item.price })
+    const qty = getQuantity(item.id)
+    addItem({ menuItemId: item.id, name: item.name, price: item.price }, qty)
     setToastMsg(`${item.name} added to cart`)
     setShowToast(true)
     setTimeout(() => setShowToast(false), 1800)
+    setQuantity(item.id, 1)
   }
 
   useEffect(() => {
@@ -113,19 +125,24 @@ export default function Menu() {
         <motion.h3 layoutId={`title-${item.id}`} className="text-text font-medium mb-1">
           {item.name}
         </motion.h3>
-        <div className="mt-auto flex items-center justify-between pt-2">
-          <motion.span layoutId={`price-${item.id}`} className="text-accent font-medium">
-            {formatPKR(item.price)}
-          </motion.span>
+        <div className="mt-auto pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <motion.span layoutId={`price-${item.id}`} className="text-accent font-medium">
+              {formatPKR(item.price)}
+            </motion.span>
+            <div onClick={(e) => e.stopPropagation()}>
+              <Counter value={getQuantity(item.id)} onChange={(q) => setQuantity(item.id, q)} />
+            </div>
+          </div>
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
             disabled={!item.available}
             onClick={(e) => {
               e.stopPropagation()
               handleAdd(item)
             }}
-            className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm px-3 py-1.5 rounded-[6px]"
+            className="w-full bg-accent hover:bg-accent-hover disabled:opacity-40 text-white text-sm px-3 py-1.5 rounded-[6px]"
           >
             Add
           </motion.button>
@@ -261,8 +278,15 @@ export default function Menu() {
           <ProductModal
             item={selectedItem}
             onClose={() => setSelectedItem(null)}
-            onAdd={(item) => {
-              handleAdd(item)
+            onAdd={(item, qty) => {
+              if (!user) {
+                navigate('/login')
+                return
+              }
+              addItem({ menuItemId: item.id, name: item.name, price: item.price }, qty)
+              setToastMsg(`${item.name} added to cart`)
+              setShowToast(true)
+              setTimeout(() => setShowToast(false), 1800)
             }}
           />
         )}
