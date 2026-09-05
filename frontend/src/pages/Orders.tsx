@@ -49,6 +49,7 @@ export default function Orders() {
     })
     const [liveStatuses, setLiveStatuses] = useState<Record<string, string>>({})
     const [filter, setFilter] = useState<string>('ALL')
+    const STEPS = ['PENDING', 'PREPARING', 'READY', 'COMPLETED']
 
     useEffect(() => {
         if (!user) {
@@ -87,6 +88,43 @@ export default function Orders() {
             activeCount: active.length,
         }
     }, [orders])
+
+    function OrderProgress({ status }: { status: string }) {
+        if (status === 'CANCELLED') {
+            return (
+                <div className="text-accent text-xs font-medium py-2">This order was cancelled</div>
+            )
+        }
+        const currentIndex = STEPS.indexOf(status)
+        return (
+            <div className="flex items-center py-2">
+                {STEPS.map((step, i) => (
+                    <div key={step} className="flex items-center flex-1 last:flex-none">
+                        <div className="flex flex-col items-center">
+                            <motion.div
+                                animate={{
+                                    backgroundColor: i <= currentIndex ? 'var(--color-accent)' : 'var(--color-border)',
+                                    scale: i === currentIndex ? 1.2 : 1,
+                                }}
+                                transition={{ duration: 0.3 }}
+                                className="w-3 h-3 rounded-full"
+                            />
+                            <span className={`text-[10px] mt-1 whitespace-nowrap ${i <= currentIndex ? 'text-text' : 'text-text-secondary'}`}>
+                                {step.charAt(0) + step.slice(1).toLowerCase()}
+                            </span>
+                        </div>
+                        {i < STEPS.length - 1 && (
+                            <motion.div
+                                animate={{ backgroundColor: i < currentIndex ? 'var(--color-accent)' : 'var(--color-border)' }}
+                                transition={{ duration: 0.3 }}
+                                className="h-0.5 flex-1 mx-1 mb-4"
+                            />
+                        )}
+                    </div>
+                ))}
+            </div>
+        )
+    }
 
     if (!user) return null
     if (loading) return <div className="p-8 text-text-secondary">Loading orders...</div>
@@ -173,6 +211,7 @@ export default function Orders() {
                                             </motion.span>
                                         </AnimatePresence>
                                     </div>
+                                    <OrderProgress status={order.status} />
 
                                     <div className="flex gap-2 mb-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                         {order.items.map((item, j) => (
