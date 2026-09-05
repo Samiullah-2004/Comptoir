@@ -58,7 +58,7 @@ export default function Menu() {
       return
     }
     const qty = getQuantity(item.id)
-    addItem({ menuItemId: item.id, name: item.name, price: item.price }, qty)
+    addItem({ menuItemId: item.id, name: item.name, price: item.price, imageUrl: item.imageUrl }, qty)
     setToastMsg(`${item.name} added to cart`)
     setShowToast(true)
     setTimeout(() => setShowToast(false), 1800)
@@ -283,7 +283,7 @@ export default function Menu() {
                 navigate('/login')
                 return
               }
-              addItem({ menuItemId: item.id, name: item.name, price: item.price }, qty)
+              addItem({ menuItemId: item.id, name: item.name, price: item.price, imageUrl: item.imageUrl }, qty)
               setToastMsg(`${item.name} added to cart`)
               setShowToast(true)
               setTimeout(() => setShowToast(false), 1800)
