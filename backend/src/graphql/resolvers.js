@@ -221,6 +221,20 @@ const resolvers = {
 
       return { url: session.url };
     },
+    
+    deleteCategory: async (_parent, { id }, context) => {
+      if (context.role !== "ADMIN") {
+        throw new Error("Only admins can manage the menu");
+      }
+      const itemCount = await context.prisma.menuItem.count({
+        where: { categoryId: id },
+      });
+      if (itemCount > 0) {
+        throw new Error("Cannot delete a category that still has menu items");
+      }
+      await context.prisma.category.delete({ where: { id } });
+      return true;
+    },
   },
 };
 
