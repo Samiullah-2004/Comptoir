@@ -137,11 +137,10 @@ export default function Admin() {
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all ${
-              filter === s
+            className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all ${filter === s
                 ? 'bg-accent text-white border-accent'
                 : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
-            }`}
+              }`}
           >
             {s === 'ALL' ? 'All' : s}
           </button>
