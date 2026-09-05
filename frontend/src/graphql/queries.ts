@@ -46,6 +46,7 @@ export const GET_ALL_ORDERS = gql`
         quantity
         menuItem {
           name
+          imageUrl
         }
       }
     }
