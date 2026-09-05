@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion'
+import { useState } from 'react'
+import Counter from './Counter'
 
 interface MenuItem {
     id: string
@@ -11,7 +13,7 @@ interface MenuItem {
 interface Props {
     item: MenuItem
     onClose: () => void
-    onAdd: (item: MenuItem) => void
+    onAdd: (item: MenuItem, quantity: number) => void
 }
 
 function formatPKR(amount: number) {
@@ -19,6 +21,8 @@ function formatPKR(amount: number) {
 }
 
 export default function ProductModal({ item, onClose, onAdd }: Props) {
+    const [quantity, setQuantity] = useState(1)
+
     return (
         <motion.div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
@@ -54,26 +58,28 @@ export default function ProductModal({ item, onClose, onAdd }: Props) {
                     >
                         Freshly prepared with quality ingredients, made to order.
                     </motion.p>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                         <motion.span
                             layoutId={`price-${item.id}`}
                             className="text-accent text-xl font-semibold"
                         >
                             {formatPKR(item.price)}
                         </motion.span>
-                        <motion.button
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            disabled={!item.available}
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                onAdd(item)
-                            }}
-                            className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-5 py-2.5 rounded-[6px]"
-                        >
-                            Add to cart
-                        </motion.button>
+                        <Counter value={quantity} onChange={setQuantity} />
                     </div>
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        disabled={!item.available}
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            onAdd(item, quantity)
+                            setQuantity(1)
+                        }}
+                        className="w-full bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-5 py-2.5 rounded-[6px]"
+                    >
+                        Add to cart
+                    </motion.button>
                 </div>
             </motion.div>
         </motion.div>
