@@ -5,10 +5,11 @@ import { useNavigate } from 'react-router-dom'
 import { GET_MY_ORDERS } from '../graphql/queries'
 import { useAuth } from '../context/AuthContext'
 import { socket } from '../lib/socket'
+import { useCart } from '../context/CartContext'
 
 interface OrderItem {
     quantity: number
-    menuItem: { name: string; imageUrl: string | null }
+    menuItem: { id: string; name: string; price: number; imageUrl: string | null; available: boolean }
 }
 
 interface Order {
@@ -50,7 +51,7 @@ export default function Orders() {
     const [liveStatuses, setLiveStatuses] = useState<Record<string, string>>({})
     const [filter, setFilter] = useState<string>('ALL')
     const STEPS = ['PENDING', 'PREPARING', 'READY', 'COMPLETED']
-
+    const { addItem } = useCart()
     useEffect(() => {
         if (!user) {
             navigate('/login')
@@ -124,6 +125,22 @@ export default function Orders() {
                 ))}
             </div>
         )
+    }
+    function handleReorder(order: Order) {
+        order.items.forEach((item) => {
+            if (item.menuItem.available) {
+                addItem(
+                    {
+                        menuItemId: item.menuItem.id,
+                        name: item.menuItem.name,
+                        price: item.menuItem.price,
+                        imageUrl: item.menuItem.imageUrl,
+                    },
+                    item.quantity
+                )
+            }
+        })
+        navigate('/cart')
     }
 
     if (!user) return null
@@ -228,7 +245,17 @@ export default function Orders() {
                                         ))}
                                     </div>
 
-                                    <p className="text-accent font-medium">{formatPKR(order.total)}</p>
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-accent font-medium">{formatPKR(order.total)}</p>
+                                        <motion.button
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.97 }}
+                                            onClick={() => handleReorder(order)}
+                                            className="text-sm border border-accent text-accent hover:bg-accent hover:text-white transition-colors px-3 py-1.5 rounded-[6px]"
+                                        >
+                                            Reorder
+                                        </motion.button>
+                                    </div>
                                 </motion.div>
                             ))}
                         </AnimatePresence>

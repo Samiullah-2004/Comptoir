@@ -25,8 +25,11 @@ export const GET_MY_ORDERS = gql`
       items {
         quantity
         menuItem {
+          id
           name
+          price
           imageUrl
+          available
         }
       }
     }
