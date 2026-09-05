@@ -102,6 +102,12 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-bg px-8 py-8">
+      <button
+        onClick={() => navigate('/')}
+        className="text-text-secondary hover:text-text text-sm mb-4 inline-flex items-center gap-1"
+      >
+        ← Back to menu
+      </button>
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-display text-2xl font-semibold text-text">Admin dashboard</h1>
         <button
@@ -138,8 +144,8 @@ export default function Admin() {
             key={s}
             onClick={() => setFilter(s)}
             className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all ${filter === s
-                ? 'bg-accent text-white border-accent'
-                : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
+              ? 'bg-accent text-white border-accent'
+              : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
               }`}
           >
             {s === 'ALL' ? 'All' : s}
@@ -171,7 +177,7 @@ export default function Admin() {
                 </span>
               </div>
 
-              <div className="flex gap-2 mb-3 overflow-x-auto">
+              <div className="flex gap-2 mb-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {order.items.map((item, i) => (
                   <div key={i} className="flex items-center gap-2 bg-bg border border-border rounded-[8px] px-2 py-1.5 whitespace-nowrap">
                     {item.menuItem.imageUrl ? (

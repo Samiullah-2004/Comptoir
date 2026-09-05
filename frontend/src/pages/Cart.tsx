@@ -91,6 +91,12 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-bg px-8 py-8">
+      <button
+        onClick={() => navigate('/')}
+        className="text-text-secondary hover:text-text text-sm mb-4 inline-flex items-center gap-1"
+      >
+        ← Back to menu
+      </button>
       <h1 className="font-display text-2xl font-semibold text-text mb-6">Your cart</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-4xl">
