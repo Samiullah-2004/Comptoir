@@ -5,6 +5,7 @@ import Register from './pages/Register'
 import Cart from './pages/Cart'
 import Orders from './pages/Orders'
 import Admin from './pages/Admin'
+import AdminMenu from './pages/AdminMenu'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/cart" element={<Cart />} />
       <Route path="/orders" element={<Orders />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/admin/menu" element={<AdminMenu />} />
     </Routes>
   )
 }
