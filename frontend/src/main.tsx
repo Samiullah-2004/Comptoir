@@ -8,6 +8,7 @@ import { CartProvider } from './context/CartContext'
 import './index.css'
 import App from './App.tsx'
 import { ThemeProvider } from './context/ThemeContext'
+import Preloader from './components/Preloader'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <CartProvider>
             <BrowserRouter>
+              <Preloader />
               <App />
             </BrowserRouter>
           </CartProvider>
