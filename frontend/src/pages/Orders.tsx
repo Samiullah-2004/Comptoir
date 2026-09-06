@@ -6,6 +6,8 @@ import { GET_MY_ORDERS } from '../graphql/queries'
 import { useAuth } from '../context/AuthContext'
 import { socket } from '../lib/socket'
 import { useCart } from '../context/CartContext'
+import Header from '../components/Header'
+import ScrollProgressIndicator from '../components/ScrollProgressIndicator'
 
 interface OrderItem {
     quantity: number
@@ -151,121 +153,119 @@ export default function Orders() {
     const filteredOrders = filter === 'ALL' ? withLiveStatus : withLiveStatus.filter((o) => o.status === filter)
 
     return (
-        <div className="min-h-screen bg-bg px-8 py-8">
-            <button
-                onClick={() => navigate('/')}
-                className="text-text-secondary hover:text-text text-sm mb-4 inline-flex items-center gap-1"
-            >
-                ← Back to menu
-            </button>
-            <h1 className="font-display text-2xl font-semibold text-text mb-8">Your orders</h1>
+        <div className="min-h-screen bg-bg">
+            <Header />
+            <ScrollProgressIndicator />
+            <div className="px-8 py-8">
+                <h1 className="font-display text-2xl font-semibold text-text mb-8">Your orders</h1>
 
-            {orders.length > 0 && (
-                <div className="grid grid-cols-3 gap-4 mb-8 max-w-xl">
-                    {[
-                        { label: 'Total orders', value: stats.totalOrders },
-                        { label: 'Active orders', value: stats.activeCount },
-                        { label: 'Total spent', value: formatPKR(stats.totalSpent) },
-                    ].map((stat, i) => (
-                        <motion.div
-                            key={stat.label}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.05 }}
-                            className="bg-surface border border-border rounded-[10px] p-4"
-                        >
-                            <p className="text-text-secondary text-xs mb-1">{stat.label}</p>
-                            <p className="text-text text-lg font-semibold">{stat.value}</p>
-                        </motion.div>
-                    ))}
-                </div>
-            )}
-
-            {orders.length === 0 ? (
-                <p className="text-text-secondary">You haven't placed any orders yet.</p>
-            ) : (
-                <>
-                    <div className="flex gap-2 mb-6 overflow-x-auto">
-                        {['ALL', ...STATUS_FLOW].map((s) => (
-                            <button
-                                key={s}
-                                onClick={() => setFilter(s)}
-                                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all ${filter === s
-                                    ? 'bg-accent text-white border-accent'
-                                    : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
-                                    }`}
+                {orders.length > 0 && (
+                    <div className="grid grid-cols-3 gap-4 mb-8 max-w-xl">
+                        {[
+                            { label: 'Total orders', value: stats.totalOrders },
+                            { label: 'Active orders', value: stats.activeCount },
+                            { label: 'Total spent', value: formatPKR(stats.totalSpent) },
+                        ].map((stat, i) => (
+                            <motion.div
+                                key={stat.label}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.05 }}
+                                className="bg-surface border border-border rounded-[10px] p-4"
                             >
-                                {s === 'ALL' ? 'All' : s}
-                            </button>
+                                <p className="text-text-secondary text-xs mb-1">{stat.label}</p>
+                                <p className="text-text text-lg font-semibold">{stat.value}</p>
+                            </motion.div>
                         ))}
                     </div>
+                )}
 
-                    <div className="max-w-lg space-y-4">
-                        <AnimatePresence initial={false}>
-                            {filteredOrders.map((order, i) => (
-                                <motion.div
-                                    key={order.id}
-                                    initial={{ opacity: 0, y: 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, x: 20 }}
-                                    transition={{ duration: 0.25, delay: i * 0.05 }}
-                                    className="bg-surface border border-border rounded-[10px] p-4"
+                {orders.length === 0 ? (
+                    <p className="text-text-secondary">You haven't placed any orders yet.</p>
+                ) : (
+                    <>
+                        <div className="flex gap-2 mb-6 overflow-x-auto">
+                            {['ALL', ...STATUS_FLOW].map((s) => (
+                                <button
+                                    key={s}
+                                    onClick={() => setFilter(s)}
+                                    className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all ${filter === s
+                                        ? 'bg-accent text-white border-accent'
+                                        : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
+                                        }`}
                                 >
-                                    <div className="flex items-center justify-between mb-3">
-                                        <span className="text-text-secondary text-sm">
-                                            {new Date(order.createdAt).toLocaleString()}
-                                        </span>
-                                        <AnimatePresence mode="wait">
-                                            <motion.span
-                                                key={order.status}
-                                                initial={{ opacity: 0, scale: 0.8 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                exit={{ opacity: 0, scale: 0.8 }}
-                                                transition={{ duration: 0.25 }}
-                                                className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusBg[order.status]} ${statusColors[order.status] || 'text-text'}`}
-                                            >
-                                                {order.status}
-                                            </motion.span>
-                                        </AnimatePresence>
-                                    </div>
-                                    <OrderProgress status={order.status} />
-
-                                    <div className="flex gap-2 mb-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                                        {order.items.map((item, j) => (
-                                            <div key={j} className="flex items-center gap-2 bg-bg border border-border rounded-[8px] px-2 py-1.5 whitespace-nowrap">
-                                                {item.menuItem.imageUrl ? (
-                                                    <div className="w-8 h-8 rounded-[4px] overflow-hidden bg-white border border-border flex-shrink-0">
-                                                        <img src={item.menuItem.imageUrl} alt={item.menuItem.name} className="w-full h-full object-cover" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="w-8 h-8 rounded-[4px] bg-border flex-shrink-0" />
-                                                )}
-                                                <span className="text-text text-xs">{item.quantity}× {item.menuItem.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-accent font-medium">{formatPKR(order.total)}</p>
-                                        <motion.button
-                                            whileHover={{ scale: 1.03 }}
-                                            whileTap={{ scale: 0.97 }}
-                                            onClick={() => handleReorder(order)}
-                                            className="text-sm border border-accent text-accent hover:bg-accent hover:text-white transition-colors px-3 py-1.5 rounded-[6px]"
-                                        >
-                                            Reorder
-                                        </motion.button>
-                                    </div>
-                                </motion.div>
+                                    {s === 'ALL' ? 'All' : s}
+                                </button>
                             ))}
-                        </AnimatePresence>
+                        </div>
 
-                        {filteredOrders.length === 0 && (
-                            <p className="text-text-secondary text-sm">No orders match this filter.</p>
-                        )}
-                    </div>
-                </>
-            )}
+                        <div className="max-w-lg space-y-4">
+                            <AnimatePresence initial={false}>
+                                {filteredOrders.map((order, i) => (
+                                    <motion.div
+                                        key={order.id}
+                                        initial={{ opacity: 0, y: 12 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, x: 20 }}
+                                        transition={{ duration: 0.25, delay: i * 0.05 }}
+                                        className="bg-surface border border-border rounded-[10px] p-4"
+                                    >
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="text-text-secondary text-sm">
+                                                {new Date(order.createdAt).toLocaleString()}
+                                            </span>
+                                            <AnimatePresence mode="wait">
+                                                <motion.span
+                                                    key={order.status}
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.8 }}
+                                                    transition={{ duration: 0.25 }}
+                                                    className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusBg[order.status]} ${statusColors[order.status] || 'text-text'}`}
+                                                >
+                                                    {order.status}
+                                                </motion.span>
+                                            </AnimatePresence>
+                                        </div>
+                                        <OrderProgress status={order.status} />
+
+                                        <div className="flex gap-2 mb-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                                            {order.items.map((item, j) => (
+                                                <div key={j} className="flex items-center gap-2 bg-bg border border-border rounded-[8px] px-2 py-1.5 whitespace-nowrap">
+                                                    {item.menuItem.imageUrl ? (
+                                                        <div className="w-8 h-8 rounded-[4px] overflow-hidden bg-white border border-border flex-shrink-0">
+                                                            <img src={item.menuItem.imageUrl} alt={item.menuItem.name} className="w-full h-full object-cover" />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-8 h-8 rounded-[4px] bg-border flex-shrink-0" />
+                                                    )}
+                                                    <span className="text-text text-xs">{item.quantity}× {item.menuItem.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-accent font-medium">{formatPKR(order.total)}</p>
+                                            <motion.button
+                                                whileHover={{ scale: 1.03 }}
+                                                whileTap={{ scale: 0.97 }}
+                                                onClick={() => handleReorder(order)}
+                                                className="text-sm border border-accent text-accent hover:bg-accent hover:text-white transition-colors px-3 py-1.5 rounded-[6px]"
+                                            >
+                                                Reorder
+                                            </motion.button>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+
+                            {filteredOrders.length === 0 && (
+                                <p className="text-text-secondary text-sm">No orders match this filter.</p>
+                            )}
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     )
 }

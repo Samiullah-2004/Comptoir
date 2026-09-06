@@ -35,3 +35,24 @@ body {
   color: var(--color-text);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+@theme {
+  /* ...existing vars... */
+  --color-admin: #B8860B;
+  --color-admin-hover: #9A6F09;
+}
+
+.dark {
+  /* ...existing vars... */
+  --color-admin: #D4A017;
+  --color-admin-hover: #E8B62E;
+}
