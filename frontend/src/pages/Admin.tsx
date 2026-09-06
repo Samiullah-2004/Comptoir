@@ -6,6 +6,7 @@ import { GET_ALL_ORDERS } from '../graphql/queries'
 import { UPDATE_ORDER_STATUS } from '../graphql/mutations'
 import { useAuth } from '../context/AuthContext'
 import { socket } from '../lib/socket'
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
 
 interface OrderItem {
   quantity: number
@@ -90,6 +91,19 @@ export default function Admin() {
     }
   }, [orders])
 
+  const bestSellers = useMemo(() => {
+    const counts: Record<string, number> = {}
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
+        counts[item.menuItem.name] = (counts[item.menuItem.name] || 0) + item.quantity
+      })
+    })
+    return Object.entries(counts)
+      .map(([name, qty]) => ({ name, qty }))
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 5)
+  }, [orders])
+
   if (!user || user.role !== 'ADMIN') return null
   if (loading) return <div className="p-8 text-text-secondary">Loading orders...</div>
   if (error) return <div className="p-8 text-accent">Failed to load orders: {error.message}</div>
@@ -137,6 +151,34 @@ export default function Admin() {
           </motion.div>
         ))}
       </div>
+      {bestSellers.length > 0 && (
+        <div className="bg-surface border border-border rounded-[10px] p-5 mb-8 max-w-2xl">
+          <h2 className="font-display text-lg text-text mb-4">Best sellers</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={bestSellers} layout="vertical" margin={{ left: 20 }}>
+              <XAxis type="number" hide />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={140}
+                tick={{ fill: 'var(--color-text-secondary)', fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                }}
+                cursor={{ fill: 'var(--color-border)', opacity: 0.3 }}
+              />
+              <Bar dataKey="qty" fill="var(--color-accent)" radius={[0, 6, 6, 0]} barSize={18} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       <div className="flex gap-2 mb-6 overflow-x-auto">
         {['ALL', ...STATUS_FLOW].map((s) => (
