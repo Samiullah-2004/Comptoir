@@ -44,6 +44,7 @@ export default function Menu() {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const categoryScrollRef = useRef<HTMLDivElement>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   function getQuantity(itemId: string) {
     return quantities[itemId] ?? 1
@@ -100,7 +101,19 @@ export default function Menu() {
   if (loading) return <div className="p-8 text-text-secondary">Loading menu...</div>
   if (error) return <div className="p-8 text-accent">Failed to load menu: {error.message}</div>
 
-  const categories = data?.categories ?? []
+  const allCategories = data?.categories ?? []
+  const searchLower = searchQuery.trim().toLowerCase()
+
+  const categories = searchLower
+    ? allCategories
+      .map((cat) => ({
+        ...cat,
+        menuItems: cat.menuItems.filter((item) =>
+          item.name.toLowerCase().includes(searchLower)
+        ),
+      }))
+      .filter((cat) => cat.menuItems.length > 0)
+    : allCategories
   const isAllView = activeCategory === null
   const singleCategory = isAllView ? null : categories.find((c) => c.id === activeCategory)
 
@@ -215,7 +228,34 @@ export default function Menu() {
       </header>
 
       <div className="px-8 py-6">
-        <HeroSlider />
+        <div className="relative max-w-md mb-6">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search for a dish..."
+            className="w-full border border-border rounded-full px-4 py-2.5 pl-10 text-sm bg-surface text-text focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors"
+          />
+          <svg
+  className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary"
+  fill="none"
+  viewBox="0 0 24 24"
+  stroke="currentColor"
+  strokeWidth={2}
+>
+  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+</svg>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text text-sm"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {!searchQuery && <HeroSlider />}
 
         <div className="relative mb-8 sticky top-0 bg-bg/95 backdrop-blur-sm py-3 z-10 -mx-8 px-8">
           <motion.button
