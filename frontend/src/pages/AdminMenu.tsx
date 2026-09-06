@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext'
 import { uploadToCloudinary } from '../lib/cloudinary'
 import Header from '../components/Header'
 import ScrollProgressIndicator from '../components/ScrollProgressIndicator'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 interface MenuItem {
   id: string
@@ -57,6 +58,7 @@ export default function AdminMenu() {
   const [editName, setEditName] = useState('')
   const [editPrice, setEditPrice] = useState('')
   const [editFile, setEditFile] = useState<File | null>(null)
+  usePageTitle('Manage Menu')
 
   if (!user || user.role !== 'ADMIN') {
     navigate('/')

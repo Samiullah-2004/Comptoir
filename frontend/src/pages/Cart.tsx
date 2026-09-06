@@ -9,6 +9,7 @@ import { GET_CATEGORIES } from '../graphql/queries'
 import Counter from '../components/Counter'
 import Header from '../components/Header'
 import ScrollProgressIndicator from '../components/ScrollProgressIndicator'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 interface MenuItem {
   id: string
@@ -37,10 +38,11 @@ export default function Cart() {
   const navigate = useNavigate()
   const [checkoutError, setCheckoutError] = useState('')
   const [notes, setNotes] = useState('')
-
+  
   const [createOrder, { loading: creatingOrder }] = useMutation(CREATE_ORDER)
   const [createCheckoutSession, { loading: creatingSession }] = useMutation(CREATE_CHECKOUT_SESSION)
   const { data: categoriesData } = useQuery<{ categories: Category[] }>(GET_CATEGORIES)
+  usePageTitle('Your Cart')
 
   if (!user) {
     navigate('/login')

@@ -13,6 +13,7 @@ import Counter from '../components/Counter'
 import FlipLink from '../components/FlipLink'
 import Header from '../components/Header'
 import ScrollProgressIndicator from '../components/ScrollProgressIndicator'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 interface MenuItem {
   id: string
@@ -47,6 +48,7 @@ export default function Menu() {
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const categoryScrollRef = useRef<HTMLDivElement>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  usePageTitle('Menu')
 
   function getQuantity(itemId: string) {
     return quantities[itemId] ?? 1

@@ -9,6 +9,7 @@ import { socket } from '../lib/socket'
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
 import Header from '../components/Header'
 import ScrollProgressIndicator from '../components/ScrollProgressIndicator'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 interface OrderItem {
   quantity: number
@@ -54,6 +55,7 @@ export default function Admin() {
   })
   const [updateStatus] = useMutation(UPDATE_ORDER_STATUS)
   const [filter, setFilter] = useState<string>('ALL')
+  usePageTitle('Admin Dashboard')
 
   useEffect(() => {
     if (!user) {
@@ -85,6 +87,7 @@ export default function Admin() {
     const todaysOrders = orders.filter((o) => new Date(o.createdAt).toDateString() === today)
     const pending = orders.filter((o) => o.status === 'PENDING' || o.status === 'PREPARING')
     const todaysRevenue = todaysOrders.reduce((sum, o) => sum + o.total, 0)
+
     return {
       totalOrders: orders.length,
       todaysOrders: todaysOrders.length,

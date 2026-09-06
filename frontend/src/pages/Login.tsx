@@ -4,14 +4,15 @@ import { useNavigate, Link } from 'react-router-dom'
 import { LOGIN } from '../graphql/mutations'
 import { useAuth } from '../context/AuthContext'
 import { motion } from 'framer-motion'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const { login } = useAuth()
   const navigate = useNavigate()
-
   const [loginMutation, { loading, error }] = useMutation(LOGIN)
+  usePageTitle('Login')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

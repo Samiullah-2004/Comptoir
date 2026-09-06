@@ -8,6 +8,7 @@ import { socket } from '../lib/socket'
 import { useCart } from '../context/CartContext'
 import Header from '../components/Header'
 import ScrollProgressIndicator from '../components/ScrollProgressIndicator'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 interface OrderItem {
     quantity: number
@@ -54,6 +55,8 @@ export default function Orders() {
     const [filter, setFilter] = useState<string>('ALL')
     const STEPS = ['PENDING', 'PREPARING', 'READY', 'COMPLETED']
     const { addItem } = useCart()
+    usePageTitle('Your Orders')
+    
     useEffect(() => {
         if (!user) {
             navigate('/login')

@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { REGISTER } from '../graphql/mutations'
 import { useAuth } from '../context/AuthContext'
 import { motion } from 'framer-motion'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 export default function Register() {
   const [name, setName] = useState('')
@@ -13,8 +14,8 @@ export default function Register() {
   const [formError, setFormError] = useState('')
   const { login } = useAuth()
   const navigate = useNavigate()
-
   const [registerMutation, { loading, error }] = useMutation(REGISTER)
+  usePageTitle('Sign Up')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
