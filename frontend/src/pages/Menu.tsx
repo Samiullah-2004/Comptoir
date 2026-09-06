@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect } from 'react'
 import { useQuery } from '@apollo/client/react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { GET_CATEGORIES } from '../graphql/queries'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import { AnimatePresence } from 'framer-motion'
 import ProductModal from '../components/ProductModal'
 import Toast from '../components/Toast'
 import HeroSlider from '../components/HeroSlider'
 import Counter from '../components/Counter'
+import FlipLink from '../components/FlipLink'
+import Header from '../components/Header'
+import ScrollProgressIndicator from '../components/ScrollProgressIndicator'
 
 interface MenuItem {
   id: string
@@ -74,7 +76,7 @@ export default function Menu() {
   }
 
   useEffect(() => {
-    if (activeCategory !== null) return // only scroll-spy in "All" view
+    if (activeCategory !== null) return
 
     const cats = data?.categories ?? []
     if (cats.length === 0) return
@@ -173,91 +175,13 @@ export default function Menu() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <header className="border-b border-border px-8 py-5 flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold text-text">Comptoir</h1>
-        <div className="flex items-center gap-3">
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={toggleTheme}
-            className="text-text-secondary hover:text-text flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border text-sm"
-            aria-label="Toggle dark mode"
-          >
-            <span>{theme === 'light' ? '🌙' : '☀️'}</span>
-            <span>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
-          </motion.button>
-          {cartCount > 0 && (
-            <motion.button
-              key={cartCount}
-              initial={{ scale: 1.3 }}
-              animate={{ scale: 1 }}
-              onClick={() => navigate('/cart')}
-              className="text-sm text-text-secondary hover:text-text"
-            >
-              Cart · {cartCount}
-            </motion.button>
-          )}
-          {user ? (
-            <>
-              <button onClick={() => navigate('/orders')} className="text-sm text-text-secondary hover:text-text transition-colors">
-                Orders
-              </button>
-              {user.role === 'ADMIN' && (
-                <button onClick={() => navigate('/admin')} className="text-sm text-text-secondary hover:text-text transition-colors">
-                  Admin
-                </button>
-              )}
-              <span className="text-sm text-text">{user.name || user.email}</span>
-            </>
-          ) : (
-            <>
-              <button onClick={() => navigate('/login')} className="text-sm text-text-secondary hover:text-text transition-colors">
-                Login
-              </button>
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => navigate('/register')}
-                className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-[6px]"
-              >
-                Sign up
-              </motion.button>
-            </>
-          )}
-        </div>
-      </header>
+      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      <ScrollProgressIndicator />
 
       <div className="px-8 py-6">
-        <div className="relative max-w-md mb-6">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search for a dish..."
-            className="w-full border border-border rounded-full px-4 py-2.5 pl-10 text-sm bg-surface text-text focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors"
-          />
-          <svg
-  className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary"
-  fill="none"
-  viewBox="0 0 24 24"
-  stroke="currentColor"
-  strokeWidth={2}
->
-  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
-</svg>
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text text-sm"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-
         {!searchQuery && <HeroSlider />}
 
-        <div className="relative mb-8 sticky top-0 bg-bg/95 backdrop-blur-sm py-3 z-10 -mx-8 px-8">
+        <div id="menu-categories" className="relative mb-8 sticky top-0 bg-bg/95 backdrop-blur-sm py-3 z-10 -mx-8 px-8">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -281,7 +205,7 @@ export default function Menu() {
                 : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
                 }`}
             >
-              All
+              <FlipLink>All</FlipLink>
             </button>
             {categories.map((cat) => {
               const isHighlighted = isAllView ? highlightedCategory === cat.id : activeCategory === cat.id
@@ -297,7 +221,7 @@ export default function Menu() {
                     : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
                     }`}
                 >
-                  {cat.name}
+                  <FlipLink>{cat.name}</FlipLink>
                 </button>
               )
             })}
@@ -343,6 +267,7 @@ export default function Menu() {
           </div>
         )}
       </div>
+
       <AnimatePresence>
         {selectedItem && (
           <ProductModal

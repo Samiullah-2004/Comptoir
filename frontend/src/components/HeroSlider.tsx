@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 interface Slide {
   title: string
@@ -50,6 +51,16 @@ export default function HeroSlider() {
 
   function next() {
     setIndex((i) => (i + 1) % slides.length)
+  }
+  const navigate = useNavigate()
+
+  function scrollToMenu() {
+    const el = document.getElementById('menu-categories')
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      navigate('/')
+    }
   }
 
   const slide = slides[index]
@@ -104,11 +115,10 @@ export default function HeroSlider() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="bg-accent hover:bg-accent-hover text-white px-6 py-2.5 rounded-[6px] text-sm font-medium w-fit"
+              onClick={scrollToMenu}
+              className="text-white text-sm font-medium w-fit underline underline-offset-4 decoration-white/60 hover:decoration-white transition-colors"
             >
-              Order Now
+              Explore the menu →
             </motion.button>
           </div>
         </motion.div>
@@ -132,9 +142,8 @@ export default function HeroSlider() {
           <button
             key={i}
             onClick={() => goTo(i)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              i === index ? 'bg-white w-5' : 'bg-white/40'
-            }`}
+            className={`w-2 h-2 rounded-full transition-all ${i === index ? 'bg-white w-5' : 'bg-white/40'
+              }`}
           />
         ))}
       </div>
