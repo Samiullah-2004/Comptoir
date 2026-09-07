@@ -123,18 +123,18 @@ export default function Admin() {
     <div className="min-h-screen bg-bg">
       <Header />
       <ScrollProgressIndicator />
-      <div className="px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="font-display text-2xl font-semibold text-text">Admin dashboard</h1>
+      <div className="px-4 sm:px-8 py-4 sm:py-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8">
+          <h1 className="font-display text-xl sm:text-2xl font-semibold text-text">Admin dashboard</h1>
           <button
             onClick={() => navigate('/admin/menu')}
-            className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-[6px]"
+            className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-[6px] self-start sm:self-auto"
           >
             Manage Menu
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8 max-w-3xl">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-6 sm:mb-8 max-w-3xl">
           {[
             { label: 'Total orders', value: stats.totalOrders },
             { label: "Today's orders", value: stats.todaysOrders },
@@ -146,24 +146,24 @@ export default function Admin() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-surface border border-border rounded-[10px] p-4"
+              className="bg-surface border border-border rounded-[10px] p-3 sm:p-4"
             >
-              <p className="text-text-secondary text-xs mb-1">{stat.label}</p>
-              <p className="text-text text-xl font-semibold">{stat.value}</p>
+              <p className="text-text-secondary text-[10px] sm:text-xs mb-1">{stat.label}</p>
+              <p className="text-text text-base sm:text-xl font-semibold">{stat.value}</p>
             </motion.div>
           ))}
         </div>
         {bestSellers.length > 0 && (
-          <div className="bg-surface border border-border rounded-[10px] p-5 mb-8 max-w-2xl">
-            <h2 className="font-display text-lg text-text mb-4">Best sellers</h2>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={bestSellers} layout="vertical" margin={{ left: 20 }}>
+          <div className="bg-surface border border-border rounded-[10px] p-4 sm:p-5 mb-6 sm:mb-8 max-w-2xl">
+            <h2 className="font-display text-base sm:text-lg text-text mb-4">Best sellers</h2>
+            <ResponsiveContainer width="100%" height={180} className="sm:!h-[220px]">
+              <BarChart data={bestSellers} layout="vertical" margin={{ left: 10 }}>
                 <XAxis type="number" hide />
                 <YAxis
                   type="category"
                   dataKey="name"
-                  width={140}
-                  tick={{ fill: 'var(--color-text-secondary)', fontSize: 12 }}
+                  width={100}
+                  tick={{ fill: 'var(--color-text-secondary)', fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -176,18 +176,18 @@ export default function Admin() {
                   }}
                   cursor={{ fill: 'var(--color-border)', opacity: 0.3 }}
                 />
-                <Bar dataKey="qty" fill="var(--color-accent)" radius={[0, 6, 6, 0]} barSize={18} />
+                <Bar dataKey="qty" fill="var(--color-accent)" radius={[0, 6, 6, 0]} barSize={16} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         )}
 
-        <div className="flex gap-2 mb-6 overflow-x-auto">
+        <div className="flex gap-2 mb-5 sm:mb-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {['ALL', ...STATUS_FLOW].map((s) => (
             <button
               key={s}
               onClick={() => setFilter(s)}
-              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all ${filter === s
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm whitespace-nowrap border transition-all ${filter === s
                 ? 'bg-accent text-white border-accent'
                 : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
                 }`}
@@ -197,7 +197,7 @@ export default function Admin() {
           ))}
         </div>
 
-        <div className="space-y-4 max-w-2xl">
+        <div className="space-y-3 sm:space-y-4 max-w-2xl">
           <AnimatePresence initial={false}>
             {filteredOrders.map((order) => (
               <motion.div
@@ -206,17 +206,17 @@ export default function Admin() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
-                className="bg-surface border border-border rounded-[10px] p-4"
+                className="bg-surface border border-border rounded-[10px] p-3 sm:p-4"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="text-text font-medium">{order.user.name}</p>
-                    <p className="text-text-secondary text-sm">{order.user.email}</p>
-                    <p className="text-text-secondary text-xs mt-0.5">
+                <div className="flex items-center justify-between mb-3 gap-2">
+                  <div className="min-w-0">
+                    <p className="text-text text-sm sm:text-base font-medium truncate">{order.user.name}</p>
+                    <p className="text-text-secondary text-xs sm:text-sm truncate">{order.user.email}</p>
+                    <p className="text-text-secondary text-[10px] sm:text-xs mt-0.5">
                       {new Date(order.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusBg[order.status]} ${statusColors[order.status] || 'text-text'}`}>
+                  <span className={`text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-1 rounded-full flex-shrink-0 ${statusBg[order.status]} ${statusColors[order.status] || 'text-text'}`}>
                     {order.status}
                   </span>
                 </div>
@@ -225,23 +225,23 @@ export default function Admin() {
                   {order.items.map((item, i) => (
                     <div key={i} className="flex items-center gap-2 bg-bg border border-border rounded-[8px] px-2 py-1.5 whitespace-nowrap">
                       {item.menuItem.imageUrl ? (
-                        <div className="w-8 h-8 rounded-[4px] overflow-hidden bg-white border border-border flex-shrink-0">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[4px] overflow-hidden bg-white border border-border flex-shrink-0">
                           <img src={item.menuItem.imageUrl} alt={item.menuItem.name} className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div className="w-8 h-8 rounded-[4px] bg-border flex-shrink-0" />
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[4px] bg-border flex-shrink-0" />
                       )}
-                      <span className="text-text text-xs">{item.quantity}× {item.menuItem.name}</span>
+                      <span className="text-text text-[11px] sm:text-xs">{item.quantity}× {item.menuItem.name}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-accent font-medium">{formatPKR(order.total)}</span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-accent text-sm sm:text-base font-medium">{formatPKR(order.total)}</span>
                   <select
                     value={order.status}
                     onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                    className="border border-border rounded-[6px] px-2 py-1 text-sm bg-transparent text-text"
+                    className="border border-border rounded-[6px] px-2 py-1 text-xs sm:text-sm bg-transparent text-text"
                   >
                     {STATUS_FLOW.map((s) => (
                       <option key={s} value={s}>{s}</option>

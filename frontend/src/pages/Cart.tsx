@@ -38,7 +38,7 @@ export default function Cart() {
   const navigate = useNavigate()
   const [checkoutError, setCheckoutError] = useState('')
   const [notes, setNotes] = useState('')
-  
+
   const [createOrder, { loading: creatingOrder }] = useMutation(CREATE_ORDER)
   const [createCheckoutSession, { loading: creatingSession }] = useMutation(CREATE_CHECKOUT_SESSION)
   const { data: categoriesData } = useQuery<{ categories: Category[] }>(GET_CATEGORIES)
@@ -97,10 +97,10 @@ export default function Cart() {
     <div className="min-h-screen bg-bg">
       <Header />
       <ScrollProgressIndicator />
-      <div className="px-8 py-8">
-        <h1 className="font-display text-2xl font-semibold text-text mb-6">Your cart</h1>
+      <div className="px-4 sm:px-8 py-4 sm:py-8">
+        <h1 className="font-display text-xl sm:text-2xl font-semibold text-text mb-4 sm:mb-6">Your cart</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-4xl">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 max-w-4xl">
           <div className="lg:col-span-2 space-y-3">
             <AnimatePresence initial={false}>
               {items.map((item) => (
@@ -110,18 +110,18 @@ export default function Cart() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 12, height: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="bg-surface border border-border rounded-[10px] p-3 flex items-center gap-3 overflow-hidden"
+                  className="bg-surface border border-border rounded-[10px] p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3 overflow-hidden"
                 >
                   {item.imageUrl ? (
-                    <div className="w-14 h-14 rounded-[6px] overflow-hidden bg-white border border-border flex-shrink-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-[6px] overflow-hidden bg-white border border-border flex-shrink-0">
                       <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                   ) : (
-                    <div className="w-14 h-14 rounded-[6px] bg-border flex-shrink-0" />
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-[6px] bg-border flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-text font-medium truncate">{item.name}</p>
-                    <p className="text-text-secondary text-sm">{formatPKR(item.price)} each</p>
+                    <p className="text-text text-sm sm:text-base font-medium truncate">{item.name}</p>
+                    <p className="text-text-secondary text-xs sm:text-sm">{formatPKR(item.price)} each</p>
                   </div>
                   <Counter
                     value={item.quantity}
@@ -132,7 +132,7 @@ export default function Cart() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => removeItem(item.menuItemId)}
-                    className="text-accent text-sm hover:text-accent-hover transition-colors whitespace-nowrap"
+                    className="text-accent text-xs sm:text-sm hover:text-accent-hover transition-colors whitespace-nowrap"
                   >
                     Remove
                   </motion.button>
@@ -140,7 +140,7 @@ export default function Cart() {
               ))}
             </AnimatePresence>
 
-            <div className="pt-4">
+            <div className="pt-3 sm:pt-4">
               <label className="block text-sm text-text-secondary mb-2">
                 Special instructions (optional)
               </label>
@@ -154,14 +154,14 @@ export default function Cart() {
             </div>
 
             {recommendations.length > 0 && (
-              <div className="pt-6">
-                <h2 className="font-display text-lg text-text mb-3">You might also like</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="pt-4 sm:pt-6">
+                <h2 className="font-display text-base sm:text-lg text-text mb-3">You might also like</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                   {recommendations.map((item) => (
                     <motion.div
                       key={item.id}
                       whileHover={{ y: -3 }}
-                      className="bg-surface border border-border rounded-[10px] p-3 flex flex-col"
+                      className="bg-surface border border-border rounded-[10px] p-2.5 sm:p-3 flex flex-col"
                     >
                       {item.imageUrl ? (
                         <div className="w-full aspect-square rounded-[6px] overflow-hidden bg-white border border-border mb-2">
@@ -170,9 +170,9 @@ export default function Cart() {
                       ) : (
                         <div className="w-full aspect-square rounded-[6px] bg-border mb-2" />
                       )}
-                      <p className="text-text text-sm font-medium truncate mb-1">{item.name}</p>
+                      <p className="text-text text-xs sm:text-sm font-medium truncate mb-1">{item.name}</p>
                       <div className="mt-auto flex items-center justify-between">
-                        <span className="text-accent text-sm font-medium">{formatPKR(item.price)}</span>
+                        <span className="text-accent text-xs sm:text-sm font-medium">{formatPKR(item.price)}</span>
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
@@ -184,7 +184,7 @@ export default function Cart() {
                               imageUrl: item.imageUrl,
                             })
                           }
-                          className="bg-accent hover:bg-accent-hover text-white w-6 h-6 rounded-full flex items-center justify-center text-sm"
+                          className="bg-accent hover:bg-accent-hover text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0"
                         >
                           +
                         </motion.button>
@@ -197,8 +197,8 @@ export default function Cart() {
           </div>
 
           <div className="lg:col-span-1">
-            <div className="bg-surface border border-border rounded-[10px] p-5 sticky top-6">
-              <h2 className="font-display text-lg text-text mb-4">Order summary</h2>
+            <div className="bg-surface border border-border rounded-[10px] p-4 sm:p-5 lg:sticky lg:top-6">
+              <h2 className="font-display text-base sm:text-lg text-text mb-4">Order summary</h2>
               <div className="space-y-2 text-sm mb-4">
                 <div className="flex justify-between text-text-secondary">
                   <span>Subtotal</span>

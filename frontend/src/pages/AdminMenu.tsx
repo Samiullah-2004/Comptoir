@@ -157,18 +157,18 @@ export default function AdminMenu() {
     <div className="min-h-screen bg-bg">
       <Header />
       <ScrollProgressIndicator />
-      <div className="px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="font-display text-2xl font-semibold text-text">Manage Menu</h1>
+      <div className="px-4 sm:px-8 py-4 sm:py-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-5 sm:mb-6">
+          <h1 className="font-display text-xl sm:text-2xl font-semibold text-text">Manage Menu</h1>
           <button
             onClick={() => navigate('/admin')}
-            className="text-sm text-text-secondary hover:text-text"
+            className="text-sm text-text-secondary hover:text-text self-start sm:self-auto"
           >
             ← Back to orders
           </button>
         </div>
 
-        <div className="bg-surface border border-border rounded-[10px] p-4 mb-8 max-w-md flex gap-2">
+        <div className="bg-surface border border-border rounded-[10px] p-3 sm:p-4 mb-6 sm:mb-8 max-w-md flex flex-col sm:flex-row gap-2">
           <input
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
@@ -177,7 +177,7 @@ export default function AdminMenu() {
           />
           <button
             onClick={handleCreateCategory}
-            className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-[6px]"
+            className="bg-accent hover:bg-accent-hover text-white text-sm px-4 py-2 rounded-[6px] whitespace-nowrap"
           >
             Add category
           </button>
@@ -187,13 +187,13 @@ export default function AdminMenu() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setShowNewItemForm((s) => !s)}
-          className="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-[6px] mb-6"
+          className="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-[6px] mb-5 sm:mb-6 text-sm sm:text-base"
         >
           {showNewItemForm ? 'Cancel' : '+ Add menu item'}
         </motion.button>
 
         {showNewItemForm && (
-          <div className="bg-surface border border-border rounded-[10px] p-5 mb-8 max-w-md space-y-3">
+          <div className="bg-surface border border-border rounded-[10px] p-4 sm:p-5 mb-6 sm:mb-8 max-w-md space-y-3">
             <input
               value={newItemName}
               onChange={(e) => setNewItemName(e.target.value)}
@@ -233,11 +233,11 @@ export default function AdminMenu() {
           </div>
         )}
 
-        <div className="space-y-10">
+        <div className="space-y-8 sm:space-y-10">
           {categories.map((cat) => (
             <section key={cat.id}>
-              <div className="flex items-center gap-3 mb-3">
-                <h2 className="font-display text-lg text-accent">{cat.name}</h2>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
+                <h2 className="font-display text-base sm:text-lg text-accent">{cat.name}</h2>
                 <button
                   onClick={() => handleDeleteCategory(cat.id, cat.name)}
                   className="text-xs text-text-secondary hover:text-accent border border-border rounded-full px-2 py-0.5"
@@ -245,9 +245,9 @@ export default function AdminMenu() {
                   Delete category
                 </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {cat.menuItems.map((item) => (
-                  <div key={item.id} className="bg-surface border border-border rounded-[10px] p-4">
+                  <div key={item.id} className="bg-surface border border-border rounded-[10px] p-3 sm:p-4">
                     {editingId === item.id ? (
                       <div className="space-y-2">
                         <input
@@ -290,15 +290,15 @@ export default function AdminMenu() {
                             <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                           </div>
                         )}
-                        <p className="text-text font-medium mb-1">{item.name}</p>
+                        <p className="text-text text-sm sm:text-base font-medium mb-1">{item.name}</p>
                         <p className="text-accent text-sm font-medium mb-3">{formatPKR(item.price)}</p>
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center justify-between mb-3 gap-2">
                           <span className="text-xs text-text-secondary">
                             {item.available ? 'Available' : 'Unavailable'}
                           </span>
                           <button
                             onClick={() => handleToggleAvailable(item)}
-                            className={`text-xs px-2 py-1 rounded-full border ${item.available
+                            className={`text-xs px-2 py-1 rounded-full border flex-shrink-0 ${item.available
                               ? 'border-success text-success'
                               : 'border-border text-text-secondary'
                               }`}
@@ -309,13 +309,13 @@ export default function AdminMenu() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => startEdit(item)}
-                            className="flex-1 border border-border text-text text-sm py-1.5 rounded-[6px]"
+                            className="flex-1 border border-border text-text text-xs sm:text-sm py-1.5 rounded-[6px]"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="flex-1 border border-accent text-accent text-sm py-1.5 rounded-[6px]"
+                            className="flex-1 border border-accent text-accent text-xs sm:text-sm py-1.5 rounded-[6px]"
                           >
                             Delete
                           </button>
