@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Lanyard from './lanyard/Lanyard'
 
-const DISPLAY_MS = 13000
+const DISPLAY_MS = 3000
 const FADE_SECONDS = 0.6
 
 export default function Preloader() {
