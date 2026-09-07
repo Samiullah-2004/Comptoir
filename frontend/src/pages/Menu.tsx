@@ -188,7 +188,7 @@ export default function Menu() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => scrollCategories('left')}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-surface border border-border text-text w-8 h-8 rounded-full flex items-center justify-center shadow-sm hover:border-accent transition-colors"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-surface border border-border text-text w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-sm hover:border-accent transition-colors"
           >
             ‹
           </motion.button>
@@ -257,14 +257,14 @@ export default function Menu() {
                   </h2>
                   <div className="h-px bg-border flex-1" />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                   {cat.menuItems.map((item, i) => renderItemCard(item, i))}
                 </div>
               </motion.section>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {singleCategory?.menuItems.map((item, i) => renderItemCard(item, i))}
           </div>
         )}
