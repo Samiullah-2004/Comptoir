@@ -66,7 +66,7 @@ export default function HeroSlider() {
   const slide = slides[index]
 
   return (
-    <div className="relative w-full h-80 sm:h-[420px] rounded-[12px] overflow-hidden mb-8">
+    <div className="relative w-full h-56 sm:h-80 md:h-[420px] rounded-[12px] overflow-hidden mb-6 sm:mb-8">
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
@@ -82,7 +82,7 @@ export default function HeroSlider() {
             className="w-full h-full object-cover"
           />
 
-          <div className="absolute inset-0 flex flex-col justify-center px-8 sm:px-14 max-w-xl">
+          <div className="absolute inset-0 flex flex-col justify-center px-5 sm:px-8 md:px-14 max-w-[90%] sm:max-w-md md:max-w-xl">
             <motion.p
               key={`eyebrow-${index}`}
               initial={{ opacity: 0, y: 10 }}
@@ -97,7 +97,7 @@ export default function HeroSlider() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="font-display text-3xl sm:text-4xl font-semibold text-white mb-3 leading-tight"
+              className="font-display text-xl sm:text-3xl md:text-4xl font-semibold text-white mb-1.5 sm:mb-3 leading-snug"
             >
               {slide.title}
             </motion.h2>
@@ -106,7 +106,7 @@ export default function HeroSlider() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-white/85 text-base mb-5"
+              className="text-white/85 text-xs sm:text-base mb-2 sm:mb-5 line-clamp-1 sm:line-clamp-none"
             >
               {slide.description}
             </motion.p>
