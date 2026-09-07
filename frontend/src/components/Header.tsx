@@ -84,7 +84,8 @@ export default function Header({ searchQuery, onSearchChange }: HeaderProps) {
 
   return (
     <header className="border-b border-border px-4 sm:px-8 py-3 sm:py-4 flex items-center gap-3 sm:gap-6 bg-surface relative">
-      <button onClick={goHome} className="flex-shrink-0">
+      <button onClick={goHome} className="flex-shrink-0 flex items-center gap-2">
+     <img src="/logo-mark.png" alt="Comptoir" className="w-8 h-8 object-contain" />
         <h1 className="font-display text-lg sm:text-xl font-semibold text-text whitespace-nowrap">Comptoir</h1>
       </button>
 
