@@ -56,7 +56,7 @@ export default function Orders() {
     const STEPS = ['PENDING', 'PREPARING', 'READY', 'COMPLETED']
     const { addItem } = useCart()
     usePageTitle('Your Orders')
-    
+
     useEffect(() => {
         if (!user) {
             navigate('/login')
@@ -115,7 +115,7 @@ export default function Orders() {
                                 transition={{ duration: 0.3 }}
                                 className="w-3 h-3 rounded-full"
                             />
-                            <span className={`text-[10px] mt-1 whitespace-nowrap ${i <= currentIndex ? 'text-text' : 'text-text-secondary'}`}>
+                            <span className={`text-[9px] sm:text-[10px] mt-1 whitespace-nowrap ${i <= currentIndex ? 'text-text' : 'text-text-secondary'}`}>
                                 {step.charAt(0) + step.slice(1).toLowerCase()}
                             </span>
                         </div>
@@ -159,11 +159,11 @@ export default function Orders() {
         <div className="min-h-screen bg-bg">
             <Header />
             <ScrollProgressIndicator />
-            <div className="px-8 py-8">
-                <h1 className="font-display text-2xl font-semibold text-text mb-8">Your orders</h1>
+            <div className="px-4 sm:px-8 py-4 sm:py-8">
+                <h1 className="font-display text-xl sm:text-2xl font-semibold text-text mb-4 sm:mb-8">Your orders</h1>
 
                 {orders.length > 0 && (
-                    <div className="grid grid-cols-3 gap-4 mb-8 max-w-xl">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8 max-w-xl">
                         {[
                             { label: 'Total orders', value: stats.totalOrders },
                             { label: 'Active orders', value: stats.activeCount },
@@ -174,10 +174,10 @@ export default function Orders() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
-                                className="bg-surface border border-border rounded-[10px] p-4"
+                                className="bg-surface border border-border rounded-[10px] p-3 sm:p-4"
                             >
-                                <p className="text-text-secondary text-xs mb-1">{stat.label}</p>
-                                <p className="text-text text-lg font-semibold">{stat.value}</p>
+                                <p className="text-text-secondary text-[10px] sm:text-xs mb-1">{stat.label}</p>
+                                <p className="text-text text-sm sm:text-lg font-semibold">{stat.value}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -187,12 +187,12 @@ export default function Orders() {
                     <p className="text-text-secondary">You haven't placed any orders yet.</p>
                 ) : (
                     <>
-                        <div className="flex gap-2 mb-6 overflow-x-auto">
+                        <div className="flex gap-2 mb-5 sm:mb-6 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                             {['ALL', ...STATUS_FLOW].map((s) => (
                                 <button
                                     key={s}
                                     onClick={() => setFilter(s)}
-                                    className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border transition-all ${filter === s
+                                    className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm whitespace-nowrap border transition-all ${filter === s
                                         ? 'bg-accent text-white border-accent'
                                         : 'bg-surface text-text-secondary border-border hover:border-accent hover:text-text'
                                         }`}
@@ -202,7 +202,7 @@ export default function Orders() {
                             ))}
                         </div>
 
-                        <div className="max-w-lg space-y-4">
+                        <div className="max-w-lg space-y-3 sm:space-y-4">
                             <AnimatePresence initial={false}>
                                 {filteredOrders.map((order, i) => (
                                     <motion.div
@@ -211,10 +211,10 @@ export default function Orders() {
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, x: 20 }}
                                         transition={{ duration: 0.25, delay: i * 0.05 }}
-                                        className="bg-surface border border-border rounded-[10px] p-4"
+                                        className="bg-surface border border-border rounded-[10px] p-3 sm:p-4"
                                     >
                                         <div className="flex items-center justify-between mb-3">
-                                            <span className="text-text-secondary text-sm">
+                                            <span className="text-text-secondary text-xs sm:text-sm">
                                                 {new Date(order.createdAt).toLocaleString()}
                                             </span>
                                             <AnimatePresence mode="wait">
@@ -224,7 +224,7 @@ export default function Orders() {
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     exit={{ opacity: 0, scale: 0.8 }}
                                                     transition={{ duration: 0.25 }}
-                                                    className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusBg[order.status]} ${statusColors[order.status] || 'text-text'}`}
+                                                    className={`text-[10px] sm:text-xs font-medium px-2 sm:px-2.5 py-1 rounded-full ${statusBg[order.status]} ${statusColors[order.status] || 'text-text'}`}
                                                 >
                                                     {order.status}
                                                 </motion.span>
@@ -236,24 +236,24 @@ export default function Orders() {
                                             {order.items.map((item, j) => (
                                                 <div key={j} className="flex items-center gap-2 bg-bg border border-border rounded-[8px] px-2 py-1.5 whitespace-nowrap">
                                                     {item.menuItem.imageUrl ? (
-                                                        <div className="w-8 h-8 rounded-[4px] overflow-hidden bg-white border border-border flex-shrink-0">
+                                                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[4px] overflow-hidden bg-white border border-border flex-shrink-0">
                                                             <img src={item.menuItem.imageUrl} alt={item.menuItem.name} className="w-full h-full object-cover" />
                                                         </div>
                                                     ) : (
-                                                        <div className="w-8 h-8 rounded-[4px] bg-border flex-shrink-0" />
+                                                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[4px] bg-border flex-shrink-0" />
                                                     )}
-                                                    <span className="text-text text-xs">{item.quantity}× {item.menuItem.name}</span>
+                                                    <span className="text-text text-[11px] sm:text-xs">{item.quantity}× {item.menuItem.name}</span>
                                                 </div>
                                             ))}
                                         </div>
 
                                         <div className="flex items-center justify-between">
-                                            <p className="text-accent font-medium">{formatPKR(order.total)}</p>
+                                            <p className="text-accent text-sm sm:text-base font-medium">{formatPKR(order.total)}</p>
                                             <motion.button
                                                 whileHover={{ scale: 1.03 }}
                                                 whileTap={{ scale: 0.97 }}
                                                 onClick={() => handleReorder(order)}
-                                                className="text-sm border border-accent text-accent hover:bg-accent hover:text-white transition-colors px-3 py-1.5 rounded-[6px]"
+                                                className="text-xs sm:text-sm border border-accent text-accent hover:bg-accent hover:text-white transition-colors px-2.5 sm:px-3 py-1.5 rounded-[6px]"
                                             >
                                                 Reorder
                                             </motion.button>
