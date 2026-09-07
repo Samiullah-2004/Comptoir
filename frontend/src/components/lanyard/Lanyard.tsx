@@ -22,7 +22,6 @@ const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
 // How far left of center the whole rig sits, in world units. Tweak to taste —
 // larger negative = further left. Kept modest so the card doesn't clip off
 // the edge of the canvas on narrower viewports.
-const LEFT_OFFSET = -4.2;
 
 interface LanyardProps {
   position?: [number, number, number];
@@ -47,10 +46,11 @@ export default function Lanyard({
   lanyardImage = null,
   lanyardWidth = 1
 }: LanyardProps) {
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  const [viewportWidth, setViewportWidth] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1280);
+  const isMobile = viewportWidth < 1024;
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setViewportWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -67,6 +67,7 @@ export default function Lanyard({
         <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
           <Band
             isMobile={isMobile}
+            viewportWidth={viewportWidth}
             frontImage={frontImage}
             backImage={backImage}
             imageFit={imageFit}
@@ -94,12 +95,14 @@ interface BandProps {
   imageFit?: 'cover' | 'contain';
   lanyardImage?: string | null;
   lanyardWidth?: number;
+  viewportWidth?: number;
 }
 
 function Band({
   maxSpeed = 50,
   minSpeed = 0,
   isMobile = false,
+  viewportWidth = 1280,
   frontImage = null,
   backImage = null,
   imageFit = 'cover',
@@ -114,7 +117,7 @@ function Band({
     card = useRef<any>();
   const ang = new THREE.Vector3(),
     rot = new THREE.Vector3();
-  const segmentProps = { type: 'dynamic' as const, canSleep: true, colliders: false, angularDamping: 4, linearDamping: 4 };
+  const segmentProps = { type: 'dynamic' as const, canSleep: true, colliders: false as const, angularDamping: 4, linearDamping: 4 };
   const { nodes, materials } = useGLTF(cardGLB) as any;
   const texture = useTexture(lanyardImage || lanyard);
   const frontTex = useTexture(frontImage || BLANK_PIXEL);
@@ -200,7 +203,7 @@ function Band({
 
   return (
     <>
-      <group position={[LEFT_OFFSET, 4, 0]}>
+      <group position={[isMobile ? 0 : Math.max(-4.2, -2.5 - (viewportWidth - 1024) / 400), 4, 0]}>
         <RigidBody ref={fixed} {...segmentProps} type="fixed" />
         <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
           <BallCollider args={[0.1]} />
