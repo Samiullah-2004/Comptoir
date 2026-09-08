@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { GET_CATEGORIES } from '../graphql/queries'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
 import ProductModal from '../components/ProductModal'
 import Toast from '../components/Toast'
 import HeroSlider from '../components/HeroSlider'
@@ -36,9 +35,8 @@ function formatPKR(amount: number) {
 export default function Menu() {
   const { data, loading, error } = useQuery<{ categories: Category[] }>(GET_CATEGORIES)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const { addItem, items } = useCart()
+  const { addItem } = useCart()
   const { user } = useAuth()
-  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const [toastMsg, setToastMsg] = useState('')
   const [showToast, setShowToast] = useState(false)
@@ -120,8 +118,6 @@ export default function Menu() {
     : allCategories
   const isAllView = activeCategory === null
   const singleCategory = isAllView ? null : categories.find((c) => c.id === activeCategory)
-
-  const cartCount = items.reduce((sum, i) => sum + i.quantity, 0)
 
   function renderItemCard(item: MenuItem, i: number) {
     return (
