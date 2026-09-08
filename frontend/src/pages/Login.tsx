@@ -18,7 +18,7 @@ export default function Login() {
     e.preventDefault()
     const res = await loginMutation({ variables: { email, password } })
     if (res.data) {
-      const data = res.data as { login: { token: string; user: { id: string; email: string; role: string } } }
+     const data = res.data as { login: { token: string; user: { id: string; name: string; email: string; role: string } } }
       login(data.login.token, data.login.user)
       navigate('/')
     }
