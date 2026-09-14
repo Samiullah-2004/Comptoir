@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comptoir-backend
+  namespace: comptoir
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: comptoir-backend
+  template:
+    metadata:
+      labels:
+        app: comptoir-backend
+    spec:
+      containers:
+        - name: backend
+          image: comptoir-backend:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: comptoir-config
+            - secretRef:
+                name: comptoir-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: comptoir-backend
+  namespace: comptoir
+spec:
+  selector:
+    app: comptoir-backend
+  ports:
+    - port: 4000
+      targetPort: 4000
+  type: ClusterIP
