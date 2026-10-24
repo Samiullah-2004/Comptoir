@@ -25,7 +25,7 @@ export default function ScrollProgressIndicator() {
   }, [])
 
   return (
-    <div className="fixed top-1/2 right-4 md:right-6 -translate-y-1/2 w-1.5 h-[120px] rounded-full bg-border overflow-hidden z-40 pointer-events-none">
+    <div className="hidden md:block fixed top-1/2 right-4 md:right-6 -translate-y-1/2 w-1.5 h-[120px] rounded-full bg-border overflow-hidden z-40 pointer-events-none">
       <div
         ref={barRef}
         className="w-full bg-accent rounded-full h-full will-change-transform"

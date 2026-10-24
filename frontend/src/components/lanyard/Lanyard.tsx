@@ -1,4 +1,3 @@
-'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, extend, useFrame } from '@react-three/fiber';
 import { useGLTF, useTexture, Environment, Lightformer } from '@react-three/drei';
@@ -19,9 +18,6 @@ const BLANK_PIXEL =
 const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
 const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
 
-// How far left of center the whole rig sits, in world units. Tweak to taste —
-// larger negative = further left. Kept modest so the card doesn't clip off
-// the edge of the canvas on narrower viewports.
 
 interface LanyardProps {
   position?: [number, number, number];
@@ -119,7 +115,12 @@ function Band({
     rot = new THREE.Vector3();
   const segmentProps = { type: 'dynamic' as const, canSleep: true, colliders: false as const, angularDamping: 4, linearDamping: 4 };
   const { nodes, materials } = useGLTF(cardGLB) as any;
-  const texture = useTexture(lanyardImage || lanyard);
+  // Configure wrapping in useTexture's onLoad rather than mutating the hook's
+  // return value during render.
+  const texture = useTexture(lanyardImage || lanyard, (tex) => {
+    const t = Array.isArray(tex) ? tex[0] : tex;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  });
   const frontTex = useTexture(frontImage || BLANK_PIXEL);
   const backTex = useTexture(backImage || BLANK_PIXEL);
 
@@ -167,9 +168,12 @@ function Band({
     return composite;
   }, [frontImage, backImage, imageFit, frontTex, backTex, materials.base.map]);
 
-  const [curve] = useState(
-    () => new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()])
-  );
+  const [curve] = useState(() => {
+    const c = new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]);
+    c.curveType = 'chordal';
+    return c;
+  });
+
 
   // No drag state, no hover cursor — the card is decorative only in the preloader.
   useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1]);
@@ -198,8 +202,6 @@ function Band({
     }
   });
 
-  curve.curveType = 'chordal';
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
   return (
     <>

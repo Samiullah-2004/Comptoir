@@ -39,8 +39,8 @@ export const CREATE_ORDER = gql`
 `;
 
 export const CREATE_CHECKOUT_SESSION = gql`
-  mutation CreateCheckoutSession($orderId: ID!) {
-    createCheckoutSession(orderId: $orderId) {
+  mutation CreateCheckoutSession($orderId: ID!, $notes: String) {
+    createCheckoutSession(orderId: $orderId, notes: $notes) {
       url
     }
   }
