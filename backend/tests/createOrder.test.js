@@ -83,8 +83,8 @@ describe('createOrder', () => {
       context
     );
 
-    // 1300 + 1050 = 2350
-    expect(createdData.total).toBe(2350);
+    // subtotal 1300 + 1050 = 2350, + 150 delivery + 118 tax (5%, rounded) = 2618
+    expect(createdData.total).toBe(2618);
     expect(createdData.status).toBe('PENDING');
   });
 
@@ -97,5 +97,40 @@ describe('createOrder', () => {
     await createOrder(null, { items: [{ menuItemId: 'item-1', quantity: 1 }] }, context);
 
     expect(context.io.emit).toHaveBeenCalledWith('newOrder', { orderId: 'order-99' });
+  });
+
+  it('rejects zero or negative quantities', async () => {
+    await expect(
+      createOrder(null, { items: [{ menuItemId: 'item-1', quantity: 0 }] }, context)
+    ).rejects.toThrow('Each item quantity must be at least 1');
+    await expect(
+      createOrder(null, { items: [{ menuItemId: 'item-1', quantity: -3 }] }, context)
+    ).rejects.toThrow('Each item quantity must be at least 1');
+  });
+
+  it('merges duplicate lines for the same menu item', async () => {
+    context.prisma.menuItem.findMany.mockResolvedValue([
+      { id: 'item-1', name: 'Fries', price: 350, available: true },
+    ]);
+    let createdData;
+    context.prisma.order.create.mockImplementation(({ data }) => {
+      createdData = data;
+      return Promise.resolve({ id: 'order-1', ...data });
+    });
+
+    await createOrder(
+      null,
+      {
+        items: [
+          { menuItemId: 'item-1', quantity: 1 },
+          { menuItemId: 'item-1', quantity: 2 },
+        ],
+      },
+      context
+    );
+
+    expect(createdData.items.create).toEqual([
+      { menuItemId: 'item-1', quantity: 3, priceAtOrder: 350 },
+    ]);
   });
 });

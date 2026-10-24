@@ -6,11 +6,42 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { ApolloServer } = require("@apollo/server");
 const { expressMiddleware } = require("@as-integrations/express5");
+const { unwrapResolverError } = require("@apollo/server/errors");
 
 const typeDefs = require("./graphql/typeDefs");
 const resolvers = require("./graphql/resolvers");
 const prisma = require("./prisma");
 const { verifyToken } = require("./utils/auth");
+
+const isProduction = process.env.NODE_ENV === "production";
+
+// Comma-separated list, e.g. "https://comptoir-food.vercel.app,http://localhost:5173".
+// Unset means allow any origin, which keeps local dev and the test suite simple.
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim())
+  : "*";
+
+// Prisma errors leak connection details and stack frames. Swap them for a
+// message the UI can show, and keep the real error in the server logs.
+function formatError(formattedError, error) {
+  const original = unwrapResolverError(error);
+  const name = original?.constructor?.name || "";
+
+  if (name.startsWith("PrismaClient")) {
+    console.error("[database]", original.message);
+    const unreachable =
+      name === "PrismaClientInitializationError" ||
+      /Can't reach database|ENOTFOUND|tenant\/user|connection/i.test(original.message);
+    return {
+      message: unreachable
+        ? "The kitchen is temporarily offline. Please try again in a moment."
+        : "Something went wrong on our side. Please try again.",
+      extensions: { code: unreachable ? "SERVICE_UNAVAILABLE" : "INTERNAL_SERVER_ERROR" },
+    };
+  }
+
+  return formattedError;
+}
 
 async function createApp({ prismaClient } = {}) {
   const db = prismaClient || prisma;
@@ -18,28 +49,43 @@ async function createApp({ prismaClient } = {}) {
   const httpServer = createServer(app);
 
   const io = new Server(httpServer, {
-    cors: { origin: "*" },
+    cors: { origin: allowedOrigins },
   });
 
   io.on("connection", (socket) => {
-    console.log("Client connected:", socket.id);
-
     socket.on("joinOrderRoom", (orderId) => {
-      socket.join(`order:${orderId}`);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("Client disconnected:", socket.id);
+      if (typeof orderId === "string") socket.join(`order:${orderId}`);
     });
   });
 
-  const apolloServer = new ApolloServer({ typeDefs, resolvers });
+  const apolloServer = new ApolloServer({
+    typeDefs,
+    resolvers,
+    formatError,
+    includeStacktraceInErrorResponses: !isProduction,
+  });
   await apolloServer.start();
+
+  app.get("/", (_req, res) => {
+    res.json({ name: "Comptoir API", graphql: "/graphql", health: "/health" });
+  });
+
+  // Pinged by the keep-alive workflow. Touching the database here is what
+  // stops Supabase's free tier from pausing the project for inactivity.
+  app.get("/health", async (_req, res) => {
+    try {
+      await db.$queryRaw`SELECT 1`;
+      res.json({ status: "ok", database: "up" });
+    } catch (err) {
+      console.error("[health]", err.message);
+      res.status(503).json({ status: "degraded", database: "down" });
+    }
+  });
 
   app.use(
     "/graphql",
-    cors(),
-    json(),
+    cors({ origin: allowedOrigins }),
+    json({ limit: "1mb" }),
     expressMiddleware(apolloServer, {
       context: async ({ req }) => {
         const authHeader = req.headers.authorization || "";

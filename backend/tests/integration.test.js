@@ -6,6 +6,7 @@ import { createApp } from '../src/app.js';
 const prisma = {
   user: { findUnique: vi.fn(), create: vi.fn() },
   category: { findMany: vi.fn() },
+  $queryRaw: vi.fn(),
 };
 
 let app;
@@ -76,5 +77,17 @@ describe('GraphQL endpoint (integration)', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.errors[0].message).toBe('You must be logged in to place an order');
+  });
+
+  it('reports database health on /health', async () => {
+    prisma.$queryRaw.mockResolvedValueOnce([{ '?column?': 1 }]);
+    const ok = await request(app).get('/health');
+    expect(ok.status).toBe(200);
+    expect(ok.body).toEqual({ status: 'ok', database: 'up' });
+
+    prisma.$queryRaw.mockRejectedValueOnce(new Error('tenant/user not found'));
+    const down = await request(app).get('/health');
+    expect(down.status).toBe(503);
+    expect(down.body.database).toBe('down');
   });
 });
