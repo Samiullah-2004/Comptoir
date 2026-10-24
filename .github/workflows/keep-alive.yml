@@ -1,0 +1,27 @@
+name: Keep alive
+
+# Supabase pauses free-tier projects after ~7 days without database activity,
+# which is what took the live site down. Hitting /health runs a real query, so
+# this keeps the database awake (and warms the Render instance as a bonus).
+on:
+  schedule:
+    - cron: '0 6 */2 * *' # every other day at 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint
+        env:
+          HEALTH_URL: ${{ vars.HEALTH_URL || 'https://comptoir-gfq9.onrender.com/health' }}
+        run: |
+          # Render's free tier can take ~60s to cold-start, so retry a few times.
+          for attempt in 1 2 3 4 5; do
+            status=$(curl -s -o response.json -w '%{http_code}' --max-time 90 "$HEALTH_URL" || echo 000)
+            echo "Attempt $attempt: HTTP $status $(cat response.json 2>/dev/null)"
+            if [ "$status" = "200" ]; then exit 0; fi
+            sleep 30
+          done
+          echo "::error::Backend or database is not healthy. If Supabase shows the project as paused, restore it from the dashboard."
+          exit 1
