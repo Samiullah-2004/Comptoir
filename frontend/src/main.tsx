@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { ApolloProvider } from '@apollo/client/react'
+import { MotionConfig } from 'framer-motion'
 import { client } from './lib/apolloClient'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
@@ -12,17 +13,19 @@ import Preloader from './components/Preloader'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ApolloProvider client={client}>
-      <ThemeProvider>
-        <AuthProvider>
-          <CartProvider>
-            <BrowserRouter>
-              <Preloader />
-              <App />
-            </BrowserRouter>
-          </CartProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </ApolloProvider>
+    <MotionConfig reducedMotion="user">
+      <ApolloProvider client={client}>
+        <ThemeProvider>
+          <AuthProvider>
+            <CartProvider>
+              <BrowserRouter>
+                <Preloader />
+                <App />
+              </BrowserRouter>
+            </CartProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </ApolloProvider>
+    </MotionConfig>
   </StrictMode>,
 )

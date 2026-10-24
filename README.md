@@ -19,28 +19,30 @@
 
 ## 🚀 Live Demo
 
-**[View Comptoir →](#)** *(https://comptoir-food.vercel.app/)*
+**[View Comptoir →](https://comptoir-food.vercel.app/)**
+
+> The API runs on Render's free tier, so the very first request after a quiet period can take up to a minute while the server wakes up. The site shows a "warming up" notice and retries automatically.
 
 ---
 
 ## 📸 Screenshots
 
-| Menu — Light Mode | Menu — Dark Mode | Cart |
+| Menu — Dark Mode | Menu — Light Mode | Cart |
 | :---: | :---: | :---: |
-| <img src="Screenshots/menu-dark.png" alt="Menu dark mode" width="280"> | <img src="Screenshots/menu.png" alt="Menu" width="280"> | <img src="Screenshots/cart.png" alt="Cart" width="280"> |
+| <img src="images/menu-dark.png" alt="Menu dark mode" width="280"> | <img src="images/menu.png" alt="Menu" width="280"> | <img src="images/cart.png" alt="Cart" width="280"> |
 
 | Order Tracking | Admin Dashboard | Admin Menu Management |
 | :---: | :---: | :---: |
-| <img src="Screenshots/orders.png" alt="Order tracking" width="280"> | <img src="Screenshots/admin-dashboard.png" alt="Admin dashboard" width="280"> | <img src="Screenshots/admin-menu.png" alt="Admin menu management" width="280"> |
+| <img src="images/orders.png" alt="Order tracking" width="280"> | <img src="images/admin-dashboard.png" alt="Admin dashboard" width="280"> | <img src="images/admin-menu.png" alt="Admin menu management" width="280"> |
 
 ---
 
 ## ✨ Features
 
 - 🍔 **Full Ordering Flow** — Browse menu without logging in, add to cart, checkout via Stripe, track status live — exactly like Toast or Square
-- 🔐 **Auth System** — Email/password registration and login with JWT sessions and bcrypt password hashing
+- 🔐 **Auth System** — Email/password registration and login with JWT sessions, bcrypt password hashing, and automatic expiry handling
 - 🔎 **Live Search & Categories** — Real-time menu search, category filtering with scroll-spy navigation, an "All" view that scrolls through every category at once
-- 🛒 **Smart Cart** — Quantity counters, live order summary (subtotal, delivery fee, tax), special instructions, "you might also like" recommendations
+- 🛒 **Smart Cart** — Persists across refreshes, guest-friendly (log in only at checkout), live order summary (subtotal, delivery fee, tax) that matches the Stripe charge exactly, special instructions, "you might also like" recommendations
 - 📡 **Real-Time Order Tracking** — Live status updates (Pending → Preparing → Ready → Completed) via Socket.IO, with an animated progress stepper and a one-click Reorder button
 - 🖥️ **Admin Dashboard** — Live stats, status filters, best-sellers chart, and full menu CRUD (categories, items, images) with direct Cloudinary uploads
 - 💳 **Stripe Checkout** — Real hosted checkout sessions generated from cart contents (test mode)
@@ -84,9 +86,9 @@
 ```text
 Customer browses menu (no login required)
       ↓
-Adds items to cart (auth required at this point)
+Adds items to cart (works as a guest — the cart is saved in the browser)
       ↓
-Reviews cart — quantities, special instructions, order summary
+Reviews cart → logs in or signs up at checkout
       ↓
 Checkout → createOrder mutation builds Order + OrderItems in Postgres
       ↓
@@ -205,7 +207,8 @@ cd ../frontend && npm install
 
 # 4. Push the database schema
 cd ../backend
-npx prisma migrate dev
+cp .env.example .env     # then fill in real values
+npx prisma migrate deploy
 
 # 5. Seed sample menu data
 npx prisma db seed
@@ -217,13 +220,24 @@ cd ../frontend && npm run dev   # frontend, from /frontend
 
 ### Environment Variables (`backend/.env`)
 
+See [`backend/.env.example`](backend/.env.example).
+
 ```env
-DATABASE_URL=your_supabase_connection_string
+DATABASE_URL=your_supabase_pooled_connection_string
 DIRECT_URL=your_supabase_direct_connection_string
 
 JWT_SECRET=your_random_secret
-
 STRIPE_SECRET_KEY=your_stripe_test_secret_key
+
+FRONTEND_URL=http://localhost:5173        # where Stripe redirects after checkout
+CORS_ORIGINS=http://localhost:5173        # optional allow-list
+```
+
+### Environment Variables (`frontend/.env`)
+
+```env
+VITE_GRAPHQL_URL=http://localhost:4000/graphql
+VITE_SOCKET_URL=http://localhost:4000
 ```
 
 ### Run with Docker
@@ -244,6 +258,16 @@ cd frontend && npx playwright test
 
 ---
 
+## 🩺 Troubleshooting
+
+**`tenant/user postgres.xxxx not found` or "The kitchen is temporarily offline"** — Supabase pauses free-tier projects after about a week with no database activity. Open the [Supabase dashboard](https://supabase.com/dashboard), select the project and click **Restore project**. The `Keep alive` GitHub Actions workflow pings `/health` every other day to stop this from happening again.
+
+**Refreshing `/orders` or `/cart` returns 404 on Vercel** — fixed by [`frontend/vercel.json`](frontend/vercel.json), which rewrites all routes to the SPA.
+
+**Health check** — `GET /health` on the backend returns `{"status":"ok","database":"up"}` when the API can reach Postgres.
+
+---
+
 ## 📐 Database Schema
 
 ```text
@@ -260,7 +284,10 @@ OrderStatusHistory       → full audit trail of every status change
 ## 🚢 Deployment
 
 - **Containerization** — Docker (multi-stage frontend build served via Nginx, Node backend)
+- **Frontend** — Vercel (`frontend/`, SPA rewrites in `vercel.json`)
+- **Backend** — Render (`npm start`, set `FRONTEND_URL` to the Vercel URL so Stripe redirects back correctly)
 - **CI/CD** — GitHub Actions: backend tests → frontend build → Playwright end-to-end tests, gated in sequence, running on every push to `dev`/`main`
+- **Keep-alive** — a scheduled workflow pings `/health` so the free-tier database never pauses
 - **Database** — Supabase PostgreSQL
 - **Images** — Cloudinary
 

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
+import { client } from '../lib/apolloClient'
 
 interface User {
   id: string
@@ -16,29 +17,51 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
-  const [user, setUser] = useState<User | null>(() => {
+// JWTs expire after 7 days. Reading `exp` client-side lets us drop a stale
+// session up front instead of failing on the first authenticated request.
+function isTokenExpired(token: string) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return typeof payload.exp === 'number' && payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
+}
+
+function loadSession(): { token: string | null; user: User | null } {
+  try {
+    const token = localStorage.getItem('token')
     const stored = localStorage.getItem('user')
-    return stored ? JSON.parse(stored) : null
-  })
+    if (!token || !stored || isTokenExpired(token)) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      return { token: null, user: null }
+    }
+    return { token, user: JSON.parse(stored) }
+  } catch {
+    return { token: null, user: null }
+  }
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState(loadSession)
 
   function login(newToken: string, newUser: User) {
     localStorage.setItem('token', newToken)
     localStorage.setItem('user', JSON.stringify(newUser))
-    setToken(newToken)
-    setUser(newUser)
+    setSession({ token: newToken, user: newUser })
   }
 
   function logout() {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    setToken(null)
-    setUser(null)
+    setSession({ token: null, user: null })
+    // Drop cached orders etc. so the next account doesn't see them.
+    client.clearStore()
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user: session.user, token: session.token, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

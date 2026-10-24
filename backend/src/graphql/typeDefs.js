@@ -56,8 +56,8 @@ type User {
     createMenuItem(name: String!, price: Float!, categoryId: ID!, imageUrl: String): MenuItem!
     updateMenuItem(id: ID!, name: String, price: Float, available: Boolean, imageUrl: String): MenuItem!
     deleteMenuItem(id: ID!): Boolean!
-    createCategory(name: String!): Category!    
-    createCheckoutSession(orderId: ID!): CheckoutSession!
+    createCategory(name: String!): Category!
+    createCheckoutSession(orderId: ID!, notes: String): CheckoutSession!
     deleteCategory(id: ID!): Boolean!
   }
     

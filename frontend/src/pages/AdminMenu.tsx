@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation } from '@apollo/client/react'
-import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { GET_CATEGORIES } from '../graphql/queries'
 import {
   CREATE_CATEGORY,
@@ -13,31 +13,19 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { uploadToCloudinary } from '../lib/cloudinary'
 import Header from '../components/Header'
-import ScrollProgressIndicator from '../components/ScrollProgressIndicator'
+import Toast from '../components/Toast'
+import { ErrorState, MenuSkeleton } from '../components/StatusViews'
 import { usePageTitle } from '../hooks/usePageTitle'
-
-interface MenuItem {
-  id: string
-  name: string
-  price: number
-  imageUrl: string | null
-  available: boolean
-}
-
-interface Category {
-  id: string
-  name: string
-  menuItems: MenuItem[]
-}
-
-function formatPKR(amount: number) {
-  return `Rs. ${amount.toLocaleString('en-PK')}`
-}
+import { formatPKR } from '../lib/pricing'
+import { optimizedImage } from '../lib/image'
+import { friendlyError } from '../lib/errors'
+import type { Category, MenuItem } from '../types'
 
 export default function AdminMenu() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { data, loading, error, refetch } = useQuery<{ categories: Category[] }>(GET_CATEGORIES)
+  const isAdmin = user?.role === 'ADMIN'
+  const { data, loading, error, refetch } = useQuery<{ categories: Category[] }>(GET_CATEGORIES, { skip: !isAdmin })
 
   const [createCategory] = useMutation(CREATE_CATEGORY)
   const [createMenuItem] = useMutation(CREATE_MENU_ITEM)
@@ -58,46 +46,64 @@ export default function AdminMenu() {
   const [editName, setEditName] = useState('')
   const [editPrice, setEditPrice] = useState('')
   const [editFile, setEditFile] = useState<File | null>(null)
+  const [toast, setToast] = useState('')
   usePageTitle('Manage Menu')
 
-  if (!user || user.role !== 'ADMIN') {
-    navigate('/')
-    return null
-  }
-  if (loading) return <div className="p-8 text-text-secondary">Loading menu...</div>
-  if (error) return <div className="p-8 text-accent">Failed to load: {error.message}</div>
+  if (!user) return <Navigate to="/login" replace state={{ from: '/admin/menu' }} />
+  if (!isAdmin) return <Navigate to="/" replace />
 
   const categories = data?.categories ?? []
 
+  function notify(message: string) {
+    setToast(message)
+    window.setTimeout(() => setToast(''), 2500)
+  }
+
+  // Every admin action goes through here so failures surface as a toast
+  // instead of an unhandled promise rejection.
+  async function run(action: () => Promise<unknown>, success: string) {
+    try {
+      await action()
+      await refetch()
+      notify(success)
+      return true
+    } catch (err) {
+      notify(friendlyError(err))
+      return false
+    }
+  }
+
   async function handleCreateCategory() {
     if (!newCategoryName.trim()) return
-    await createCategory({ variables: { name: newCategoryName } })
-    setNewCategoryName('')
-    refetch()
+    const ok = await run(() => createCategory({ variables: { name: newCategoryName.trim() } }), 'Category added')
+    if (ok) setNewCategoryName('')
   }
 
   async function handleCreateItem() {
-    if (!newItemName.trim() || !newItemPrice || !newItemCategoryId) return
+    if (!newItemName.trim() || !newItemCategoryId) {
+      notify('Give the item a name and a category')
+      return
+    }
+    const price = parseFloat(newItemPrice)
+    if (!(price > 0)) {
+      notify('Enter a price greater than zero')
+      return
+    }
     setUploading(true)
     try {
-      let imageUrl: string | undefined
-      if (newItemFile) {
-        imageUrl = await uploadToCloudinary(newItemFile)
+      const ok = await run(async () => {
+        const imageUrl = newItemFile ? await uploadToCloudinary(newItemFile) : undefined
+        await createMenuItem({
+          variables: { name: newItemName.trim(), price, categoryId: newItemCategoryId, imageUrl },
+        })
+      }, `${newItemName.trim()} added to the menu`)
+      if (ok) {
+        setNewItemName('')
+        setNewItemPrice('')
+        setNewItemCategoryId('')
+        setNewItemFile(null)
+        setShowNewItemForm(false)
       }
-      await createMenuItem({
-        variables: {
-          name: newItemName,
-          price: parseFloat(newItemPrice),
-          categoryId: newItemCategoryId,
-          imageUrl,
-        },
-      })
-      setNewItemName('')
-      setNewItemPrice('')
-      setNewItemCategoryId('')
-      setNewItemFile(null)
-      setShowNewItemForm(false)
-      refetch()
     } finally {
       setUploading(false)
     }
@@ -105,12 +111,7 @@ export default function AdminMenu() {
 
   async function handleDeleteCategory(id: string, name: string) {
     if (!confirm(`Delete category "${name}"? It must be empty first.`)) return
-    try {
-      await deleteCategory({ variables: { id } })
-      refetch()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete category')
-    }
+    await run(() => deleteCategory({ variables: { id } }), `Deleted ${name}`)
   }
 
   function startEdit(item: MenuItem) {
@@ -121,43 +122,41 @@ export default function AdminMenu() {
   }
 
   async function handleSaveEdit(id: string) {
+    const price = parseFloat(editPrice)
+    if (!editName.trim() || !(price > 0)) {
+      notify('Name and a price above zero are required')
+      return
+    }
     setUploading(true)
     try {
-      let imageUrl: string | undefined
-      if (editFile) {
-        imageUrl = await uploadToCloudinary(editFile)
-      }
-      await updateMenuItem({
-        variables: {
-          id,
-          name: editName,
-          price: parseFloat(editPrice),
-          ...(imageUrl ? { imageUrl } : {}),
-        },
-      })
-      setEditingId(null)
-      refetch()
+      const ok = await run(async () => {
+        const imageUrl = editFile ? await uploadToCloudinary(editFile) : undefined
+        await updateMenuItem({
+          variables: { id, name: editName.trim(), price, ...(imageUrl ? { imageUrl } : {}) },
+        })
+      }, 'Changes saved')
+      if (ok) setEditingId(null)
     } finally {
       setUploading(false)
     }
   }
 
   async function handleToggleAvailable(item: MenuItem) {
-    await updateMenuItem({ variables: { id: item.id, available: !item.available } })
-    refetch()
+    await run(
+      () => updateMenuItem({ variables: { id: item.id, available: !item.available } }),
+      `${item.name} is now ${item.available ? 'unavailable' : 'available'}`
+    )
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this item permanently?')) return
-    await deleteMenuItem({ variables: { id } })
-    refetch()
+    await run(() => deleteMenuItem({ variables: { id } }), 'Item deleted')
   }
 
   return (
     <div className="min-h-screen bg-bg">
       <Header />
-      <ScrollProgressIndicator />
-      <div className="px-4 sm:px-8 py-4 sm:py-8">
+      <main className="px-4 sm:px-8 py-5 sm:py-10 max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-5 sm:mb-6">
           <h1 className="font-display text-xl sm:text-2xl font-semibold text-text">Manage Menu</h1>
           <button
@@ -192,7 +191,14 @@ export default function AdminMenu() {
           {showNewItemForm ? 'Cancel' : '+ Add menu item'}
         </motion.button>
 
-        {showNewItemForm && (
+        <AnimatePresence initial={false}>
+          {showNewItemForm && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
           <div className="bg-surface border border-border rounded-[10px] p-4 sm:p-5 mb-6 sm:mb-8 max-w-md space-y-3">
             <input
               value={newItemName}
@@ -231,16 +237,21 @@ export default function AdminMenu() {
               {uploading ? 'Uploading...' : 'Create item'}
             </button>
           </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {loading && !data && <MenuSkeleton cards={6} />}
+        {error && !data && <ErrorState error={error} onRetry={() => refetch()} />}
 
         <div className="space-y-8 sm:space-y-10">
           {categories.map((cat) => (
             <section key={cat.id}>
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
-                <h2 className="font-display text-base sm:text-lg text-accent">{cat.name}</h2>
+                <h2 className="font-display text-base sm:text-lg text-accent-fg">{cat.name}</h2>
                 <button
                   onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                  className="text-xs text-text-secondary hover:text-accent border border-border rounded-full px-2 py-0.5"
+                  className="text-xs text-text-secondary hover:text-accent-fg border border-border rounded-full px-2 py-0.5"
                 >
                   Delete category
                 </button>
@@ -287,23 +298,27 @@ export default function AdminMenu() {
                       <>
                         {item.imageUrl && (
                           <div className="w-full aspect-square rounded-[6px] overflow-hidden bg-white border border-border mb-3">
-                            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                            <img src={optimizedImage(item.imageUrl, 480) ?? undefined} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
                           </div>
                         )}
                         <p className="text-text text-sm sm:text-base font-medium mb-1">{item.name}</p>
-                        <p className="text-accent text-sm font-medium mb-3">{formatPKR(item.price)}</p>
+                        <p className="text-accent-fg text-sm font-medium mb-3">{formatPKR(item.price)}</p>
                         <div className="flex items-center justify-between mb-3 gap-2">
                           <span className="text-xs text-text-secondary">
                             {item.available ? 'Available' : 'Unavailable'}
                           </span>
                           <button
+                            role="switch"
+                            aria-checked={item.available}
+                            aria-label={`Toggle availability for ${item.name}`}
                             onClick={() => handleToggleAvailable(item)}
-                            className={`text-xs px-2 py-1 rounded-full border flex-shrink-0 ${item.available
-                              ? 'border-success text-success'
-                              : 'border-border text-text-secondary'
-                              }`}
+                            className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${item.available ? 'bg-success' : 'bg-border'}`}
                           >
-                            Toggle
+                            <motion.span
+                              layout
+                              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                              className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow ${item.available ? 'right-1' : 'left-1'}`}
+                            />
                           </button>
                         </div>
                         <div className="flex gap-2">
@@ -315,7 +330,7 @@ export default function AdminMenu() {
                           </button>
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="flex-1 border border-accent text-accent text-xs sm:text-sm py-1.5 rounded-[6px]"
+                            className="flex-1 border border-accent text-accent-fg text-xs sm:text-sm py-1.5 rounded-[6px]"
                           >
                             Delete
                           </button>
@@ -328,7 +343,8 @@ export default function AdminMenu() {
             </section>
           ))}
         </div>
-      </div>
+      </main>
+      <Toast message={toast} show={!!toast} />
     </div>
   )
 }

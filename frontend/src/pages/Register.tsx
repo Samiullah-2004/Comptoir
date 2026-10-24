@@ -1,108 +1,88 @@
 import { useState } from 'react'
 import { useMutation } from '@apollo/client/react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { REGISTER } from '../graphql/mutations'
 import { useAuth } from '../context/AuthContext'
-import { motion } from 'framer-motion'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { friendlyError } from '../lib/errors'
+import AuthLayout, { Field, FormError, SubmitButton } from '../components/AuthLayout'
+
+interface AuthUser {
+  id: string
+  name: string
+  email: string
+  role: string
+}
 
 export default function Register() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [formError, setFormError] = useState('')
+  const [error, setError] = useState('')
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [registerMutation, { loading, error }] = useMutation(REGISTER)
-  usePageTitle('Sign Up')
+  const location = useLocation()
+  const from = (location.state as { from?: string } | null)?.from ?? '/'
+  const [registerMutation, { loading }] = useMutation(REGISTER)
+  usePageTitle('Sign up')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setFormError('')
+    setError('')
 
-    if (password !== confirmPassword) {
-      setFormError('Passwords do not match')
-      return
-    }
     if (password.length < 8) {
-      setFormError('Password must be at least 8 characters')
+      setError('Password must be at least 8 characters')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
       return
     }
 
-    const res = await registerMutation({ variables: { name, email, password } })
-    if (res.data) {
-      const data = res.data as { register: { token: string; user: { id: string; name: string; email: string; role: string } } }
+    try {
+      const res = await registerMutation({ variables: { name, email, password } })
+      const data = res.data as { register: { token: string; user: AuthUser } }
       login(data.register.token, data.register.user)
-      navigate('/')
+      navigate(from, { replace: true })
+    } catch (err) {
+      setError(friendlyError(err))
     }
   }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-      <motion.form
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        onSubmit={handleSubmit}
-        className="bg-surface border border-border rounded-[10px] p-8 w-full max-w-sm"
-      >
-        <h1 className="font-display text-2xl font-semibold text-text mb-6">Create account</h1>
-
-        <label className="block text-sm text-text-secondary mb-1">Full name</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors"
-        />
-
-        <label className="block text-sm text-text-secondary mb-1">Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors"
-        />
-
-        <label className="block text-sm text-text-secondary mb-1">Password</label>
-        <input
+    <AuthLayout title="Create account" subtitle="It takes ten seconds. Then the menu is yours.">
+      <form onSubmit={handleSubmit}>
+        <Field id="name" label="Full name" value={name} onChange={setName} autoComplete="name" />
+        <Field id="email" label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" />
+        <Field
+          id="password"
+          label="Password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors"
+          onChange={setPassword}
+          autoComplete="new-password"
+          hint="At least 8 characters."
         />
-
-        <label className="block text-sm text-text-secondary mb-1">Confirm password</label>
-        <input
+        <Field
+          id="confirm-password"
+          label="Confirm password"
           type="password"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          className="w-full border border-border rounded-[6px] px-3 py-2 mb-4 text-text bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors"
+          onChange={setConfirmPassword}
+          autoComplete="new-password"
         />
-
-        {(formError || error) && (
-          <p className="text-accent text-sm mb-4">{formError || error?.message}</p>
-        )}
-
-        <motion.button
-          type="submit"
-          disabled={loading}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full bg-accent hover:bg-accent-hover text-white rounded-[6px] py-2 disabled:opacity-50"
-        >
-          {loading ? 'Creating account...' : 'Sign up'}
-        </motion.button>
-
-        <p className="text-sm text-text-secondary mt-4 text-center">
-          Already have an account? <Link to="/login" className="text-accent">Log in</Link>
-        </p>
-      </motion.form>
-    </div>
+        <FormError message={error} />
+        <SubmitButton loading={loading} loadingText="Creating account...">
+          Sign up
+        </SubmitButton>
+      </form>
+      <p className="text-sm text-text-secondary mt-6 text-center">
+        Already have an account?{' '}
+        <Link to="/login" state={{ from }} className="text-accent-fg hover:opacity-75 font-medium">
+          Log in
+        </Link>
+      </p>
+    </AuthLayout>
   )
 }

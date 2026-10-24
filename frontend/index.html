@@ -1,16 +1,41 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Comptoir — Order fresh, track it live</title>
+    <meta
+      name="description"
+      content="Comptoir is a modern restaurant ordering platform: browse the menu, check out with Stripe, and track your order live."
+    />
+    <meta name="theme-color" content="#161616" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/logo-mark.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Comptoir — Modern Restaurant Ordering" />
+    <meta
+      property="og:description"
+      content="Browse the menu, order in seconds, and track your food in real time."
+    />
+    <meta property="og:image" content="https://res.cloudinary.com/uzxk7ify/image/upload/Crown_Crust_Pizza_Hero" />
+    <meta name="twitter:card" content="summary_large_image" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Comptoir</title>
+
+    <script>
+      // Apply the saved theme before first paint so there's no light/dark flash.
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'light') document.documentElement.classList.remove('dark');
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
@@ -22,6 +47,6 @@
         accentColor: "#6B1028",
       };
     </script>
-    <script src="https://chatspark-ai-9hwh.vercel.app/embed.js" async></script>
+    <script src="https://chatspark-ai-9hwh.vercel.app/embed.js" defer></script>
   </body>
 </html>
