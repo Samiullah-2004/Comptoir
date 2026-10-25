@@ -29,6 +29,8 @@ interface LanyardProps {
   imageFit?: 'cover' | 'contain';
   lanyardImage?: string | null;
   lanyardWidth?: number;
+  /** Fires once the model, textures and physics have loaded and the first few frames have rendered. */
+  onReady?: () => void;
 }
 
 export default function Lanyard({
@@ -40,7 +42,8 @@ export default function Lanyard({
   backImage = null,
   imageFit = 'cover',
   lanyardImage = null,
-  lanyardWidth = 1
+  lanyardWidth = 1,
+  onReady
 }: LanyardProps) {
   const [viewportWidth, setViewportWidth] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1280);
   const isMobile = viewportWidth < 1024;
@@ -60,7 +63,8 @@ export default function Lanyard({
         onCreated={({ gl }) => gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1)}
       >
         <ambientLight intensity={Math.PI} />
-        <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
+        {/* A 30Hz step on mobile made the swing visibly choppy; five bodies are cheap enough to run at 60Hz everywhere. */}
+        <Physics gravity={gravity} timeStep={1 / 60}>
           <Band
             isMobile={isMobile}
             viewportWidth={viewportWidth}
@@ -69,6 +73,7 @@ export default function Lanyard({
             imageFit={imageFit}
             lanyardImage={lanyardImage}
             lanyardWidth={lanyardWidth}
+            onReady={onReady}
           />
         </Physics>
         <Environment blur={0.75}>
@@ -92,6 +97,7 @@ interface BandProps {
   lanyardImage?: string | null;
   lanyardWidth?: number;
   viewportWidth?: number;
+  onReady?: () => void;
 }
 
 function Band({
@@ -103,7 +109,8 @@ function Band({
   backImage = null,
   imageFit = 'cover',
   lanyardImage = null,
-  lanyardWidth = 1
+  lanyardWidth = 1,
+  onReady
 }: BandProps) {
   const band = useRef<any>(null),
     fixed = useRef<any>(null),
@@ -184,7 +191,14 @@ function Band({
     [0, 1.5, 0]
   ]);
 
+  // Signal readiness after a few frames, once the band geometry has been
+  // built and drawn, so the card never fades in mid-setup.
+  const framesRendered = useRef(0);
+
   useFrame((_state, delta) => {
+    if (framesRendered.current < 3 && ++framesRendered.current === 3) {
+      onReady?.();
+    }
     if (fixed.current) {
       [j1, j2].forEach(ref => {
         if (!ref.current.lerped) ref.current.lerped = new THREE.Vector3().copy(ref.current.translation());
